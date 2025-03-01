@@ -8,9 +8,11 @@ from django.shortcuts import render
 import datetime
 from django.core.exceptions import ObjectDoesNotExist
 
+
 # Home Page View
 def home(request):
     return render(request, 'railway/home.html')
+
 
 # def search_trains(request):
 #     source = request.GET.get('source', '').strip()
@@ -49,8 +51,11 @@ otp_storage = {}
 
 from django.middleware.csrf import get_token
 
+
 def get_csrf_token(request):
     return JsonResponse({"csrfToken": get_token(request)})
+
+
 def send_otp(request):
     email = request.GET.get('email')
     if not email:
@@ -76,6 +81,7 @@ def verify_otp(request):
         return JsonResponse({"success": True, "message": "OTP verified successfully!"})
     else:
         return JsonResponse({"error": "Incorrect OTP"}, status=400)
+
 
 def register_user(request):
     if request.method == "POST":
@@ -130,46 +136,11 @@ def register(request):
         return redirect('login')
     return render(request, 'railway/register.html')
 
-# def search_trains(request):
-#     source = request.GET.get('source', '').strip()
-#     destination = request.GET.get('destination', '').strip()
-#     travel_date = request.GET.get('date', '').strip()
-#
-#     if not source or not destination or not travel_date:
-#         return render(request, "railway/search_trains.html", {"error": "Missing parameters"})
-#
-#     # Convert date into the weekday (e.g., Monday)
-#     travel_day = datetime.datetime.strptime(travel_date, "%Y-%m-%d").strftime("%A").lower()
-#
-#     # Find direct trains
-#     available_trains = Train.objects.filter(
-#         source=source,
-#         destination=destination,
-#         **{travel_day: True}  # Check the Boolean field for the weekday
-#     )
-#
-#     # Find trains that have an intermediate station matching the destination
-#     trains_with_intermediate = Train.objects.filter(
-#         stations__station_name=destination,
-#         **{travel_day: True}
-#     ).distinct()
-#
-#     # Combine both queries
-#     available_trains = available_trains | trains_with_intermediate
-#
-#     return render(request, "railway/search_trains.html", {
-#         "source": source,
-#         "destination": destination,
-#         "travel_date": travel_date,
-#         "trains": available_trains
-#     })
 
-
-# Train Booking API
 
 def search_trains(request):
-    source = request.GET.get("source", "").strip()
-    destination = request.GET.get("destination", "").strip()
+    source = request.GET.get("source", "").strip().lower()
+    destination = request.GET.get("destination", "").strip().lower()
     travel_date = request.GET.get("date", "").strip()
 
     if not source or not destination or not travel_date:
@@ -182,53 +153,56 @@ def search_trains(request):
     direct_trains = Train.objects.filter(
         source=source,
         destination=destination,
-        # travel_day=datetime.date
-        ** {travel_day: True}  # Check the boolean field for the weekday
+        **{travel_day: True}  # Check the boolean field for the weekday
     )
+    source_trains = (Train.objects.filter(
+        source=source,
+        **{travel_day: True}
+    ).distinct() | Train.objects.filter(
+         stations__station_name=source,
+        **{travel_day:True}
+    ).distinct() )
 
-    # Get trains with intermediate stations
-    # intermediate_trains = Train.objects.filter(
-    #     stations__station_name__in=[source,destination],
-    #     # stations__station_name=source,
-    #     **{travel_day: True}
-    # ).distinct()
+    destination_trains = IntermediateStation.objects.filter(
+        # stations__station_name=destination,
+        station_name=destination
+        # **{travel_day: True}
+    ).select_related("train").order_by("id")
 
-    # intermediate_trains = IntermediateStation.objects.filter(
-    #     stations__station_name__in=[source, destination],
-    #     # stations__station_name=source,
-    #     **{travel_day: True}
-    # ).distinct()
-
-    source_stations=IntermediateStation.objects.filter(station_name=source).select_related("train")
-    destination_stations=IntermediateStation.objects.filter(station_name=destination).select_related("train")
     valid_intermediate_trains = []
-    # for train in intermediate_trains:
-    #     station_names = list(train.stations.values_list("station_name", flat=True))
-    #
-    #     # if destination in station_names and station_names.index(source) < station_names.index(destination):
-    #     #     valid_intermediate_trains.append(train)
-    #     if source in station_names and destination in station_names and station_names.index(source) < station_names.index(destination):
-    #         valid_intermediate_trains.append(train)
+    for train in source_trains:
+        station_list=IntermediateStation.objects.filter(train=train).order_by("id")
+        station_names=[s.station_name.lower() for s in station_list]
 
-    for source_station in source_stations:
-        train=source_station.train
+        print(f"Checking Train: {train.train_name}, Stations: {station_list}")
 
-        destination_station=destination_stations.filter(train=train).first()
-        if destination_station:
-            source_index=train.intermediatestation_set.filter(train=train,station_name=source).value_list("id",flat=True)[0]
-            destination_index=train.intermediatestation_set.filter(train=train,station_nmae=destination).value_list("id",flat=True)[0]
-
-            if(source_index<destination_index):
-                valid_intermediate_trains.append(train)
+        if destination in station_names:
+            valid_intermediate_trains.append(train)
+        # if source in station_names and destination in station_names:
+        #     if station_names.index(source) < station_names.index(destination):
+        #         valid_intermediate_trains.append(train)
+    # for train in comman_trains:
+    #     # station_names = list(train.stations.values_list("station_name", flat=True))
+    #     station_list=IntermediateStation.objects.filter(train=train).order_by("id")
+    #     station_names=[s.station_name.lower() for s in station_list]
+    #     if source in station_names and destination in station_names:
+    #         if station_names.index(source) < station_names.index(destination):
+    #             valid_intermediate_trains.append(train)
 
     available_trains = list(direct_trains) + list(valid_intermediate_trains)
-    #   available_trains = list(direct_trains)
+    print(f"Searching trains from {source} to {destination} on {travel_day}")
+    print(f"Direct Trains Found: {direct_trains}")
+    print(f"Source Trains: {source_trains}")
+    print(f"Destination Trains: {destination_trains}")
+    print(f"Valid Intermediate Trains: {valid_intermediate_trains}")
     return render(request, "railway/search_trains.html", {
         "source": source,
         "destination": destination,
         "travel_date": travel_date,
         "trains": available_trains
     })
+
+
 
 def book_ticket(request):
     if request.method == "POST":
@@ -254,4 +228,3 @@ def generate_otp(request):
         request.session['otp'] = otp
         return JsonResponse({"otp": otp})
     return JsonResponse({"error": "Invalid request"}, status=400)
-
