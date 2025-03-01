@@ -148,6 +148,7 @@ class TrainAdmin(admin.ModelAdmin):
         return ", ".join(selected_days) if selected_days else "Not Set"
 
     get_display_days.short_description = "Operating Days"
+
 admin.site.register(Train, TrainAdmin)
 admin.site.register(CustomUser, CustomUserAdmin)
 

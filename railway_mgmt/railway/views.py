@@ -187,16 +187,39 @@ def search_trains(request):
     )
 
     # Get trains with intermediate stations
-    intermediate_trains = Train.objects.filter(
-        stations__station_name=destination,
-        **{travel_day: True}
-    ).distinct()
+    # intermediate_trains = Train.objects.filter(
+    #     stations__station_name__in=[source,destination],
+    #     # stations__station_name=source,
+    #     **{travel_day: True}
+    # ).distinct()
 
+    # intermediate_trains = IntermediateStation.objects.filter(
+    #     stations__station_name__in=[source, destination],
+    #     # stations__station_name=source,
+    #     **{travel_day: True}
+    # ).distinct()
+
+    source_stations=IntermediateStation.objects.filter(station_name=source).select_related("train")
+    destination_stations=IntermediateStation.objects.filter(station_name=destination).select_related("train")
     valid_intermediate_trains = []
-    for train in intermediate_trains:
-        station_names = list(train.stations.values_list("station_name", flat=True))
-        if source in station_names and station_names.index(source) < station_names.index(destination):
-            valid_intermediate_trains.append(train)
+    # for train in intermediate_trains:
+    #     station_names = list(train.stations.values_list("station_name", flat=True))
+    #
+    #     # if destination in station_names and station_names.index(source) < station_names.index(destination):
+    #     #     valid_intermediate_trains.append(train)
+    #     if source in station_names and destination in station_names and station_names.index(source) < station_names.index(destination):
+    #         valid_intermediate_trains.append(train)
+
+    for source_station in source_stations:
+        train=source_station.train
+
+        destination_station=destination_stations.filter(train=train).first()
+        if destination_station:
+            source_index=train.intermediatestation_set.filter(train=train,station_name=source).value_list("id",flat=True)[0]
+            destination_index=train.intermediatestation_set.filter(train=train,station_nmae=destination).value_list("id",flat=True)[0]
+
+            if(source_index<destination_index):
+                valid_intermediate_trains.append(train)
 
     available_trains = list(direct_trains) + list(valid_intermediate_trains)
     #   available_trains = list(direct_trains)

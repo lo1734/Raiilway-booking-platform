@@ -6,7 +6,6 @@ urlpatterns = [
     path('', home, name='home'),  # Home page
     path('register/', register_user, name='register_user'),
     path('login/', user_login, name='login'),  # Login page
-    # path('search/', search_trains, name='search_trains'),
     path('search_trains/', search_trains, name='search_trains'),
     path('send-otp/', send_otp, name='send_otp'),
     path('verify-otp/', verify_otp, name='verify_otp'),
