@@ -161,33 +161,35 @@ def search_trains(request):
     ).distinct() | Train.objects.filter(
          stations__station_name=source,
         **{travel_day:True}
-    ).distinct() )
+    ).distinct())
 
-    destination_trains = IntermediateStation.objects.filter(
-        # stations__station_name=destination,
-        station_name=destination
-        # **{travel_day: True}
-    ).select_related("train").order_by("id")
+    # destination_trains = IntermediateStation.objects.filter(
+    #     # stations__station_name=destination,
+    #     station_name=destination
+    #     # **{travel_day: True}
+    # ).select_related("train").order_by("id")
 
+    destination_trains=Train.objects.filter(
+        destination=destination,
+        **{travel_day:True}
+    ).distinct()
+
+    destination_list = IntermediateStation.objects.filter(
+        train__in=destination_trains
+    )
     valid_intermediate_trains = []
     for train in source_trains:
         station_list=IntermediateStation.objects.filter(train=train).order_by("id")
         station_names=[s.station_name.lower() for s in station_list]
-
+        destination_names=[d.station_name.lower() for d in destination_list]
         print(f"Checking Train: {train.train_name}, Stations: {station_list}")
 
-        if destination in station_names:
+        if destination in station_names or destination in destination_names:
             valid_intermediate_trains.append(train)
         # if source in station_names and destination in station_names:
         #     if station_names.index(source) < station_names.index(destination):
         #         valid_intermediate_trains.append(train)
-    # for train in comman_trains:
-    #     # station_names = list(train.stations.values_list("station_name", flat=True))
-    #     station_list=IntermediateStation.objects.filter(train=train).order_by("id")
-    #     station_names=[s.station_name.lower() for s in station_list]
-    #     if source in station_names and destination in station_names:
-    #         if station_names.index(source) < station_names.index(destination):
-    #             valid_intermediate_trains.append(train)
+
 
     available_trains = list(direct_trains) + list(valid_intermediate_trains)
     print(f"Searching trains from {source} to {destination} on {travel_day}")
