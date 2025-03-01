@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railway Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        nav {
+            background: #333;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+        nav ul li {
+            margin: 0 10px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+        .auth-buttons {
+            display: flex;
+        }
+        .auth-buttons a {
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            width: 50%;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px gray;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            width: 80%;
+            display: block;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>Railway Management System</h1>
+        <div style="display: flex; align-items: center;">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="admin.html">Admin Panel</a></li>
+            </ul>
+            <div class="auth-buttons">
+<!--                <a href="login.html">Login</a>-->
+<!--                <a href="register.html">Register</a>-->
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'register' %}">Register</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <h2>Welcome to the Railway Management System</h2>
+        <p>Book your train tickets easily and securely.</p>
+
+        <h3>Search for Trains</h3>
+        <form id="searchForm" action="{% url 'search_trains' %}" method="GET">
+            <input type="text" name="source" id="source" placeholder="Source" required>
+            <input type="text" name="destination" id="destination" placeholder="Destination" required>
+            <input type="date" name="date" id="travelDate" required>
+            <button type="submit">Search</button>
+        </form>
+
+
+        <p id="search_trains"></p>
+    </main>
+
+
+        <script>
+            document.getElementById("searchForm").addEventListener("submit", function(event) {
+<!--            event.preventDefault();-->
+            let source = document.getElementById("source").value;
+            let destination = document.getElementById("destination").value;
+             let travelDate = document.getElementById("travelDate").value;
+            window.location.href = `/search_trains/?source=${source}&destination=${destination}&date=${travelDate}`;
+    });
+</script>
+
+</body>
+</html>
+
+

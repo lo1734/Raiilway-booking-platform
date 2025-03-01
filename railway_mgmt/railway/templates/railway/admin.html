@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        h2 {
+            margin-top: 20px;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            width: 50%;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px gray;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        input, select, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            display: block;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+        label {
+            font-weight: bold;
+        }
+        .days-container, .stations-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .days-container input, .stations-container input {
+            width: auto;
+            margin-right: 5px;
+        }
+        p {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Admin Panel</h2>
+    <form id="adminForm">
+        <input type="text" id="trainNumber" placeholder="Train Number" required>
+        <input type="text" id="trainName" placeholder="Train Name" required>
+        <input type="number" id="totalSeats" placeholder="Total Seats" required>
+
+        <label>Boarding Station and Time:</label>
+        <input type="time" id="boardingTime" required>
+        <input type="text" id="trainSource" placeholder="Source" required>
+
+        <label>Departure Station and Time:</label>
+        <input type="time" id="departureTime" required>
+        <input type="text" id="trainDestination" placeholder="Destination" required>
+
+        <label>Number of Intermediate Stations:</label>
+        <select id="numStations" required>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+        </select>
+
+        <div id="stationsContainer"></div>
+
+        <label>Select Days:</label>
+        <div class="days-container">
+            <input type="checkbox" id="allDays" value="All Days"> All Days
+            <input type="checkbox" name="trainDays" value="Monday"> Mon
+            <input type="checkbox" name="trainDays" value="Tuesday"> Tue
+            <input type="checkbox" name="trainDays" value="Wednesday"> Wed
+            <input type="checkbox" name="trainDays" value="Thursday"> Thu
+            <input type="checkbox" name="trainDays" value="Friday"> Fri
+            <input type="checkbox" name="trainDays" value="Saturday"> Sat
+            <input type="checkbox" name="trainDays" value="Sunday"> Sun
+        </div>
+        <button type="submit">Add Train</button>
+    </form>
+    <p id="adminMessage"></p>
+    <script>
+        document.getElementById("numStations").addEventListener("change", function() {
+            let container = document.getElementById("stationsContainer");
+            container.innerHTML = "";
+            let num = parseInt(this.value);
+            for (let i = 1; i <= num; i++) {
+                container.innerHTML += `<label>Intermediate Station ${i}:</label>
+                                        <input type="text" name="station${i}" placeholder="Station Name" required>
+                                        <label>Arrival Time:</label>
+                                        <input type="time" name="arrival${i}" required>
+                                        <label>Leaving Time:</label>
+                                        <input type="time" name="leaving${i}" required>`;
+            }
+        });
+
+        document.getElementById("allDays").addEventListener("change", function() {
+            let daysCheckboxes = document.querySelectorAll('input[name="trainDays"]');
+            daysCheckboxes.forEach(cb => cb.checked = this.checked);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Trains</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            width: 70%;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px gray;
+            text-align: left;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #28a745;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Available Trains</h2>
+        <p><strong>Source:</strong> {{ source }}</p>
+        <p><strong>Destination:</strong> {{ destination }}</p>
+        <p><strong>Travel Date:</strong> {{ travel_date }}</p>
+
+        {% if trains %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Train Number</th>
+                    <th>Train Name</th>
+                    <th>Seats Left</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for train in trains %}
+                <tr>
+                    <td>{{ train.train_number }}</td>
+                    <td>{{ train.train_name }}</td>
+                    <td>{{ train.total_seats }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No trains available on this day.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

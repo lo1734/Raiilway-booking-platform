@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        h2 {
+            margin-top: 20px;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            width: 30%;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px gray;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            display: block;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .email-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .email-container input {
+            flex: 1;
+        }
+        .email-container button {
+            padding: 10px;
+            width: auto;
+            font-size: 14px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        p {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .captcha-container, .otp-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .captcha-box, .otp-box {
+            background: #ddd;
+            padding: 10px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h2>Register</h2>
+    <form id="registerForm" method="POST">
+        <input type="hidden" id="csrf_token" name="csrfmiddlewaretoken" value="">
+        <input type="text" id="registerUsername" placeholder="Username" required>
+        <div class="email-container">
+            <input type="email" id="registerEmail" placeholder="Email" required>
+            <button type="button" onclick="sendOTP()">Verify</button>
+        </div>
+
+        <div class="otp-container" id="otpSection" style="display: none;">
+            <input type="text" id="otpInput" placeholder="Enter OTP" required>
+            <button type="button" onclick="verifyOTP()">Verify OTP</button>
+        </div>
+
+        <input type="password" id="registerPassword" placeholder="Password" required>
+
+        <div class="captcha-container">
+            <div id="captcha" class="captcha-box"></div>
+            <button type="button" onclick="generateCaptcha()">Reload</button>
+        </div>
+        <input type="text" id="captchaInput" placeholder="Enter CAPTCHA" required>
+
+        <button type="submit" id="registerButton" disabled>Register</button>
+    </form>
+    <p id="registerMessage"></p>
+    <script>
+        function generateCaptcha() {
+            let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let captchaText = '';
+            for (let i = 0; i < 6; i++) {
+                captchaText += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById("captcha").innerText = captchaText;
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("/get-csrf-token/")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("csrf_token").value = data.csrfToken;
+                });
+        });
+
+        function sendOTP() {
+            let email = document.getElementById("registerEmail").value;
+            if (!email) {
+                alert("Please enter an email first.");
+                return;
+            }
+            let otp = Math.floor(100000 + Math.random() * 900000);
+            sessionStorage.setItem("emailOTP", otp);
+            alert("Your OTP is: " + otp);
+            document.getElementById("otpSection").style.display = "flex";
+        }
+
+        function verifyOTP() {
+            let enteredOTP = document.getElementById("otpInput").value;
+            let storedOTP = sessionStorage.getItem("emailOTP");
+            if (enteredOTP === storedOTP) {
+                alert("Email verified successfully!");
+                document.getElementById("registerButton").disabled = false;
+            } else {
+                alert("Incorrect OTP. Please try again.");
+            }
+        }
+
+        document.getElementById("registerForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let username = document.getElementById("registerUsername").value;
+            let email = document.getElementById("registerEmail").value;
+            let password = document.getElementById("registerPassword").value;
+            let captchaValue = document.getElementById("captcha").innerText;
+            let captchaInput = document.getElementById("captchaInput").value;
+            let csrfToken = document.getElementById("csrf_token").value;
+
+            if (captchaValue !== captchaInput) {
+                document.getElementById("registerMessage").innerText = "CAPTCHA incorrect. Try again!";
+                generateCaptcha();
+                return;
+            }
+
+            fetch("/register/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": csrfToken
+                },
+                body: `username=${username}&email=${email}&password=${password}&csrfmiddlewaretoken=${csrfToken}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById("registerMessage").innerText = data.error;
+                } else {
+                    document.getElementById("registerMessage").innerText = "Registration successful!";
+                    window.location.href = "/";
+                }
+            });
+        });
+
+        generateCaptcha();
+    </script>
+</body>
+</html>
