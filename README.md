@@ -69,6 +69,25 @@ Open the browser and visit: http://127.0.0.1:8000/
 - 🔐 **4. Authentication** - New users can Register and Login securely.OTP verification is used for added security.
 - 🛠 **5. Admin Panel** - Superuser can add, edit, or delete trains, stations and bookings.Access it via: http://127.0.0.1:8000/admin/.
 
+## **📂 Project Structure**
+```sh
+railway-management-system/
+│── railway_mgmt/                  # Main Django project folder
+│   ├── railway/                    # Django app for railway operations
+│   │   ├── migrations/             # Database migrations
+│   │   ├── templates/              # HTML templates
+│   │   ├── static/                 # CSS & JavaScript files
+│   │   ├── models.py               # Database models
+│   │   ├── views.py                # Business logic
+│   │   ├── urls.py                 # URL routing
+│   │   ├── admin.py                # Django Admin configuration
+│   │   ├── forms.py                # Django forms
+│   ├── manage.py                   # Django management script
+│── db.sqlite3                       # SQLite database (for development)
+│── requirements.txt                  # Dependencies list
+│── README.md                        # Project Documentation
+
+```
 ## **🛠 Future Enhancements**
 - 🏆 **Payment Integration** - Enable ticket booking with online payment.
 - 🚆 **Real-time Seat Availability** - Show available seats dynamically.
