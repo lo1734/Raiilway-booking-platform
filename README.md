@@ -67,8 +67,6 @@ Open the browser and visit: http://127.0.0.1:8000/
 - 🔍 **2. Search Trains** - Displays direct trains and trains with intermediate stations.Users can click "Book Now" to reserve a seat.
 - 🎟️ **3. Booking Tickets** - After logging in, users can select a train and book tickets.Available seats are updated dynamically.
 - 🔐 **4. Authentication** - New users can Register and Login securely.OTP verification is used for added security.
-- 🛠 **5. Admin Panel** - Superuser can add, edit, or delete trains, stations, and bookings.
-  
-- Access it via: http://127.0.0.1:8000/admin/.
+- 🛠 **5. Admin Panel** - Superuser can add, edit, or delete trains, stations and bookings.Access it via: http://127.0.0.1:8000/admin/.
 
 
