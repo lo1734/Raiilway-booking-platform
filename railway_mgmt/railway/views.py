@@ -154,49 +154,49 @@ def search_trains(request):
         source=source,
         destination=destination,
         **{travel_day: True}  # Check the boolean field for the weekday
-    )
+    ).distinct()
+    print(f" Direct Trains Found: {direct_trains}")
+
     source_trains = (Train.objects.filter(
         source=source,
         **{travel_day: True}
-    ).distinct() | Train.objects.filter(
-         stations__station_name=source,
-        **{travel_day:True}
     ).distinct())
-
     # destination_trains = IntermediateStation.objects.filter(
     #     # stations__station_name=destination,
     #     station_name=destination
     #     # **{travel_day: True}
     # ).select_related("train").order_by("id")
+    intermediate_source_stations=IntermediateStation.objects.filter(
+        station_name=source,
+    ).select_related("train").order_by("id")
+    print(f"🛤️ Source Trains (Direct Start): {source_trains}")
+    print(f"🔍 Source Trains (Intermediate Start): {[t.train for t in intermediate_source_stations]}")
 
     destination_trains=Train.objects.filter(
         destination=destination,
-        **{travel_day:True}
+        **{travel_day: True}
     ).distinct()
 
-    destination_list = IntermediateStation.objects.filter(
-        train__in=destination_trains
-    )
     valid_intermediate_trains = []
-    for train in source_trains:
-        station_list=IntermediateStation.objects.filter(train=train).order_by("id")
+    for source_station in intermediate_source_stations:
+        train=source_station.train
+        station_list=IntermediateStation.objects.filter(train=train).order_by("arrival_time")
         station_names=[s.station_name.lower() for s in station_list]
-        destination_names=[d.station_name.lower() for d in destination_list]
-        print(f"Checking Train: {train.train_name}, Stations: {station_list}")
+        print(f"Checking Train: {train.train_name}, Stations: {station_names}")
 
-        if destination in station_names or destination in destination_names:
-            valid_intermediate_trains.append(train)
-        # if source in station_names and destination in station_names:
-        #     if station_names.index(source) < station_names.index(destination):
-        #         valid_intermediate_trains.append(train)
+        if source in station_names and destination in station_names:
+            if station_names.index(source)<station_names.index(destination):
+                valid_intermediate_trains.append(train)
 
+    print(f" Valid Intermediate Trains: {valid_intermediate_trains}")
 
-    available_trains = list(direct_trains) + list(valid_intermediate_trains)
-    print(f"Searching trains from {source} to {destination} on {travel_day}")
-    print(f"Direct Trains Found: {direct_trains}")
-    print(f"Source Trains: {source_trains}")
-    print(f"Destination Trains: {destination_trains}")
-    print(f"Valid Intermediate Trains: {valid_intermediate_trains}")
+    available_trains = list(set(direct_trains) | set(valid_intermediate_trains))
+
+    # print(f"Searching trains from {source} to {destination} on {travel_day}")
+    # print(f"Direct Trains Found: {direct_trains}")
+    # print(f"Source Trains: {source_trains}")
+    # print(f"Destination Trains: {destination_trains}")
+    # print(f"Valid Intermediate Trains: {valid_intermediate_trains}")
     return render(request, "railway/search_trains.html", {
         "source": source,
         "destination": destination,

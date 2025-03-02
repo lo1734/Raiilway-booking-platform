@@ -53,8 +53,13 @@ class IntermediateStation(models.Model):
     arrival_time = models.TimeField()
     departure_time = models.TimeField()
 
+    is_source = models.BooleanField(default=False)
+    is_destination = models.BooleanField(default=False)
+
     def __str__(self):
         return self.station_name
+
+
 # class IntermediateStation(models.Model):
 #     train = models.ForeignKey(Train, on_delete=models.CASCADE)
 #     station_name = models.CharField(max_length=100)
@@ -75,3 +80,30 @@ class Booking(models.Model):
         return f"{self.user.username} - {self.train.train_name}"
 
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=Train)
+def add_source_and_destination(sender, instance, created, **kwargs):
+    if created:  # ✅ Only add when a new train is created
+        # ✅ Check if source and destination already exist in IntermediateStation (avoid duplicates)
+        existing_source = IntermediateStation.objects.filter(train=instance, station_name=instance.source, is_source=True).exists()
+        existing_destination = IntermediateStation.objects.filter(train=instance, station_name=instance.destination, is_destination=True).exists()
+
+        if not existing_source:
+            IntermediateStation.objects.create(
+                train=instance,
+                station_name=instance.source,
+                arrival_time=instance.boarding_time,  # Arrival is train's start time
+                departure_time=instance.boarding_time,  # Departure is also the start time
+                is_source=True
+            )
+
+        if not existing_destination:
+            IntermediateStation.objects.create(
+                train=instance,
+                station_name=instance.destination,
+                arrival_time=instance.departure_time,  # Arrival is train's end time
+                departure_time=instance.departure_time,  # Departure is also the end time
+                is_destination=True
+            )
