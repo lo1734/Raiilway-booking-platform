@@ -105,6 +105,6 @@ railway-management-system/
 ## **📞 Contact**
 
 - **📧 Email:** lohi1734@gmail.com
-- **🔗 GitHub:** [yourgithub](https://github.com/lo1734
+- **🔗 GitHub:** [yourgithub](https://github.com/lo1734)
 - **🔗 LinkedIn:** [yourlinkedin](https://www.linkedin.com/in/lohitaksha-n-949363262/)
 
