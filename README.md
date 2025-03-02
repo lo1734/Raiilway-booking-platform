@@ -36,7 +36,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 ### 🔹 **3. Configure Database**
     ```python
-    DATABASES = {
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'railway_db',
@@ -44,20 +44,20 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
         'PASSWORD': 'your_mysql_password',
         'HOST': 'localhost',
         'PORT': '3306',
-        }
-    }
+     }
+}
 
 ### 🔹 **4. Run Migrations**
     ```sh
-    python manage.py makemigrations
-    python manage.py migrate
+python manage.py makemigrations
+python manage.py migrate
 
 ### 🔹 **5.  Create Superuser (for Admin Panel)**
-```sh
+    ```sh
 python manage.py createsuperuser
 
 ### 🔹 **6.   Start the Server**
-```sh
+    ```sh
 python manage.py runserver
 
 Open the browser and visit: http://127.0.0.1:8000/
