@@ -75,7 +75,7 @@ Open the browser and visit: http://127.0.0.1:8000/
 - 📲 **Mobile-Friendly UI** - Improve responsiveness for mobile users.
 
 ## **🤝 Contributing**
--Contributions are welcome! If you find a bug or have a feature request, feel free to:
+- Contributions are welcome! If you find a bug or have a feature request, feel free to:
 
 - **1** Fork this repository.
 - **2** Create a branch (git checkout -b feature-new-feature).
