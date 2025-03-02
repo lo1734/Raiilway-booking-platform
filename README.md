@@ -26,3 +26,40 @@ A web-based **Railway Management System** built using **Django** and **MySQL**, 
 ```sh
 git clone https://github.com/yourusername/railway-management-system.git
 cd railway-management-system
+
+## ⚙️ **Installation & Setup**
+### 🔹 **2. Create a Virtual Environment**
+```sh
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+### 🔹 **3. Configure Database**
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'railway_db',
+        'USER': 'your_mysql_user',
+        'PASSWORD': 'your_mysql_password',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
+
+### 🔹 **4. Run Migrations**
+```sh
+python manage.py makemigrations
+python manage.py migrate
+
+### 🔹 **5.  Create Superuser (for Admin Panel)**
+```sh
+python manage.py createsuperuser
+
+### 🔹 **6.   Start the Server**
+```sh
+python manage.py runserver
+
+Open the browser and visit: http://127.0.0.1:8000/
+
+
+
