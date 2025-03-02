@@ -23,12 +23,13 @@ A web-based **Railway Management System** built using **Django** and **MySQL**, 
 
 ## ⚙️ **Installation & Setup**
 ### 🔹 **1. Clone the Repository**
+```sh
 git clone https://github.com/yourusername/railway-management-system.git
 cd railway-management-system
 
----
 
 ### 🔹 **2. Create a Virtual Environment**
+```
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
