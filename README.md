@@ -69,4 +69,18 @@ Open the browser and visit: http://127.0.0.1:8000/
 - 🔐 **4. Authentication** - New users can Register and Login securely.OTP verification is used for added security.
 - 🛠 **5. Admin Panel** - Superuser can add, edit, or delete trains, stations and bookings.Access it via: http://127.0.0.1:8000/admin/.
 
+## **🛠 Future Enhancements**
+- 🏆 **Payment Integration** - Enable ticket booking with online payment.
+- 🚆 **Real-time Seat Availability** - Show available seats dynamically.
+- 📲 **Mobile-Friendly UI** - Improve responsiveness for mobile users.
+
+## **🤝 Contributing**
+-Contributions are welcome! If you find a bug or have a feature request, feel free to:
+
+**1** Fork this repository.
+**2** Create a branch (git checkout -b feature-new-feature).
+**3** Commit your changes (git commit -m "Add new feature").
+**4** Push to the branch (git push origin feature-new-feature).
+**5** Create a Pull Request.
+
 
