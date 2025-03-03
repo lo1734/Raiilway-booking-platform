@@ -7,6 +7,11 @@ import random
 from django.shortcuts import render
 import datetime
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
+import json
+
 
 
 # Home Page View
@@ -124,17 +129,44 @@ def user_logout(request):
 
 
 # Registration View
+# def register(request):
+#     if request.method == "POST":
+#         username = request.POST['username']
+#         email = request.POST['email']
+#         password = request.POST['password']
+#         if User.objects.filter(username=username).exists():
+#             return JsonResponse({"error": "Username already exists"}, status=400)
+#         user = User.objects.create_user(username, email, password)
+#         user.save()
+#         return redirect('login')
+#     return render(request, 'railway/register.html')
 def register(request):
     if request.method == "POST":
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST['password']
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({"error": "Username already exists"}, status=400)
-        user = User.objects.create_user(username, email, password)
-        user.save()
-        return redirect('login')
-    return render(request, 'railway/register.html')
+        try:
+            data = json.loads(request.body)  # ✅ Extract JSON data
+            username = data.get('username', '').strip()
+            email = data.get('email', '').strip()
+            password = data.get('password', '').strip()
+
+            if not username or not email or not password:
+                return JsonResponse({"error": "All fields are required."}, status=400)
+
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({"error": "Username already exists"}, status=400)
+
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({"error": "Email already exists"}, status=400)
+
+            # ✅ Create and save user
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.save()
+
+            return JsonResponse({"message": "Registration successful! Please log in."}, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON data."}, status=400)
+
+    return JsonResponse({"error": "Invalid request method."}, status=405)
 
 
 

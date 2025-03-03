@@ -152,38 +152,50 @@
         }
 
         document.getElementById("registerForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            let username = document.getElementById("registerUsername").value;
-            let email = document.getElementById("registerEmail").value;
-            let password = document.getElementById("registerPassword").value;
-            let captchaValue = document.getElementById("captcha").innerText;
-            let captchaInput = document.getElementById("captchaInput").value;
-            let csrfToken = document.getElementById("csrf_token").value;
+        event.preventDefault();
 
-            if (captchaValue !== captchaInput) {
-                document.getElementById("registerMessage").innerText = "CAPTCHA incorrect. Try again!";
-                generateCaptcha();
-                return;
-            }
+    let username = document.getElementById("registerUsername").value;
+    let email = document.getElementById("registerEmail").value;
+    let password = document.getElementById("registerPassword").value;
+    let captchaValue = document.getElementById("captcha").innerText;
+    let captchaInput = document.getElementById("captchaInput").value;
+    let csrfToken = document.getElementById("csrf_token").value;  // ✅ CSRF token
 
-            fetch("/register/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRFToken": csrfToken
-                },
-                body: `username=${username}&email=${email}&password=${password}&csrfmiddlewaretoken=${csrfToken}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    document.getElementById("registerMessage").innerText = data.error;
-                } else {
-                    document.getElementById("registerMessage").innerText = "Registration successful!";
-                    window.location.href = "/";
-                }
-            });
-        });
+    if (captchaValue !== captchaInput) {
+        document.getElementById("registerMessage").innerText = "CAPTCHA incorrect. Try again!";
+        generateCaptcha();
+        return;
+    }
+
+    fetch("/register/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken  // ✅ Include CSRF token
+        },
+        body: JSON.stringify({
+            username: username,
+            email: email,
+            password: password
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById("registerMessage").innerText = data.error;
+        } else {
+            document.getElementById("registerMessage").innerText = "Registration successful!";
+            setTimeout(() => {
+                window.location.href = "/login";
+            }, 1500);
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        document.getElementById("registerMessage").innerText = "Something went wrong!";
+    });
+});
+
 
         generateCaptcha();
     </script>
