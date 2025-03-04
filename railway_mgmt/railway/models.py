@@ -5,7 +5,10 @@ from calendar import Day
 
 # ✅ Custom User Model
 class CustomUser(AbstractUser):
-    pass  # Add extra fields if needed
+    email = models.EmailField(unique=True)  # Ensure unique emails
+
+    def __str__(self):
+        return self.username # Add extra fields if needed
 
 class Day(models.Model):
     name = models.CharField(max_length=10, unique=True)  # Example: "Monday"

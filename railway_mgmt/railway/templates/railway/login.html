@@ -64,8 +64,9 @@
 <body>
     <h2>Login</h2>
     <form id="loginForm">
-        <input type="text" id="loginUsername" placeholder="Username" required>
-        <input type="password" id="loginPassword" placeholder="Password" required>
+        <input type="hidden" id="csrf_token" name="csrfmiddlewaretoken" value="">
+        <input type="text" id="loginUsername" name="username" placeholder="Username" required>
+        <input type="password" id="loginPassword" name="password" placeholder="Password" required>
 
         <div class="captcha-container">
             <div id="captcha" class="captcha-box"></div>
@@ -76,6 +77,7 @@
         <button type="submit">Login</button>
     </form>
     <p id="loginMessage"></p>
+
     <script>
         function generateCaptcha() {
             let chars = '!@#$%^&*()ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -86,18 +88,50 @@
             document.getElementById("captcha").innerText = captchaText;
         }
 
-        document.getElementById("loginForm").addEventListener("submit", function(event) {
-            event.preventDefault();
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("/get-csrf-token/")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("csrf_token").value = data.csrfToken;
+                });
+        });
+
+        async function loginUser(event) {
+            event.preventDefault();  // Prevent form from refreshing the page
+
+            let username = document.getElementById("loginUsername").value;
+            let password = document.getElementById("loginPassword").value;
             let captchaValue = document.getElementById("captcha").innerText;
             let captchaInput = document.getElementById("captchaInput").value;
+            let csrfToken = document.getElementById("csrf_token").value;  // Extract CSRF token
+
             if (captchaValue !== captchaInput) {
                 document.getElementById("loginMessage").innerText = "CAPTCHA incorrect. Try again!";
                 generateCaptcha();
                 return;
             }
-            document.getElementById("loginMessage").innerText = "Login successful!";
-        });
 
+            let formData = new FormData();
+            formData.append("username", username);
+            formData.append("password", password);
+            formData.append("csrfmiddlewaretoken", csrfToken);
+
+            let response = await fetch("/login/", {
+                method: "POST",
+                body: formData
+            });
+
+            let result = await response.json();
+
+            if (response.ok) {
+                document.getElementById("loginMessage").innerText = "Login successful!";
+                window.location.href = "/home/";  // Redirect to dashboard after login
+            } else {
+                document.getElementById("loginMessage").innerText = result.error;
+            }
+        }
+
+        document.getElementById("loginForm").addEventListener("submit", loginUser);
         generateCaptcha();
     </script>
 </body>

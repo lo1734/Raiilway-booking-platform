@@ -1,10 +1,10 @@
 from django.urls import path
-from .views import (home, user_login, user_logout, register, book_ticket,
-                    generate_otp, search_trains, register_user, send_otp, verify_otp, get_csrf_token)
+from .views import (home, user_login, user_logout, book_ticket,
+                    generate_otp, search_trains, register, send_otp, verify_otp, get_csrf_token)
 
 urlpatterns = [
     path('', home, name='home'),  # Home page
-    path('register/', register_user, name='register_user'),
+    path('register/',register, name='register'),
     path('login/', user_login, name='login'),  # Login page
     path('search_trains/', search_trains, name='search_trains'),
     path('send-otp/', send_otp, name='send_otp'),

@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
-from .models import Train, Booking, IntermediateStation
+from .models import Train, Booking, IntermediateStation,CustomUser
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -19,38 +19,7 @@ def home(request):
     return render(request, 'railway/home.html')
 
 
-# def search_trains(request):
-#     source = request.GET.get('source', '').strip()
-#     destination = request.GET.get('destination', '').strip()
-#     travel_date = request.GET.get('date', '').strip()
-#
-#     if not source or not destination or not travel_date:
-#         return render(request, "railway/search_trains.html", {"error": "Missing parameters"})
-#
-#     # Get the day of the week (Monday, Tuesday, etc.)
-#     selected_day = datetime.datetime.strptime(travel_date, "%Y-%m-%d").strftime("%A").lower()
-#
-#     # Find trains running on this day OR through intermediate stations
-#     trains = Train.objects.filter(
-#         source=source,
-#         destination=destination,
-#         # travel_date=datetime.date
-#     ).filter(**{selected_day: True})  # Check the Boolean field for the weekday
-#
-#     # Also check trains with intermediate stations
-#     trains_with_intermediate = Train.objects.filter(
-#         stations__station_name=destination
-#     ).filter(**{selected_day: True}).distinct()
-#
-#     # Combine both queries
-#     available_trains = trains | trains_with_intermediate
-#
-#     return render(request, "railway/search_trains.html", {
-#         "source": source,
-#         "destination": destination,
-#         "travel_date": travel_date,
-#         "trains": available_trains
-#     })
+
 
 otp_storage = {}
 
@@ -88,38 +57,25 @@ def verify_otp(request):
         return JsonResponse({"error": "Incorrect OTP"}, status=400)
 
 
-def register_user(request):
-    if request.method == "POST":
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
 
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({"error": "Username already exists"}, status=400)
-        if User.objects.filter(email=email).exists():
-            return JsonResponse({"error": "Email already exists"}, status=400)
-
-        # Create and save user
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.save()
-        login(request, user)  # Auto-login user after registration
-        return JsonResponse({"message": "Registration successful!"})
-
-    return render(request, "railway/register.html")
 
 
 # Login View
 def user_login(request):
     if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
+
         if user:
             login(request, user)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':  # Check if AJAX request
+                return JsonResponse({"message": "Login successful"}, status=200)
             return redirect('home')
         else:
             return JsonResponse({"error": "Invalid credentials"}, status=400)
-    return render(request, 'railway/login.html')
+
+    return render(request, 'railway/login.html', {"csrf_token": get_token(request)})
 
 
 # Logout View
@@ -129,21 +85,11 @@ def user_logout(request):
 
 
 # Registration View
-# def register(request):
-#     if request.method == "POST":
-#         username = request.POST['username']
-#         email = request.POST['email']
-#         password = request.POST['password']
-#         if User.objects.filter(username=username).exists():
-#             return JsonResponse({"error": "Username already exists"}, status=400)
-#         user = User.objects.create_user(username, email, password)
-#         user.save()
-#         return redirect('login')
-#     return render(request, 'railway/register.html')
+
 def register(request):
     if request.method == "POST":
         try:
-            data = json.loads(request.body)  # ✅ Extract JSON data
+            data = json.loads(request.body)
             username = data.get('username', '').strip()
             email = data.get('email', '').strip()
             password = data.get('password', '').strip()
@@ -151,14 +97,14 @@ def register(request):
             if not username or not email or not password:
                 return JsonResponse({"error": "All fields are required."}, status=400)
 
-            if User.objects.filter(username=username).exists():
+            if CustomUser.objects.filter(username=username).exists():
                 return JsonResponse({"error": "Username already exists"}, status=400)
 
-            if User.objects.filter(email=email).exists():
+            if CustomUser.objects.filter(email=email).exists():
                 return JsonResponse({"error": "Email already exists"}, status=400)
 
             # ✅ Create and save user
-            user = User.objects.create_user(username=username, email=email, password=password)
+            user = CustomUser.objects.create_user(username=username, email=email, password=password)
             user.save()
 
             return JsonResponse({"message": "Registration successful! Please log in."}, status=201)
@@ -166,7 +112,8 @@ def register(request):
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data."}, status=400)
 
-    return JsonResponse({"error": "Invalid request method."}, status=405)
+    # return JsonResponse({"error": "Invalid request method."}, status=405)
+    return render(request,"railway/register.html")
 
 
 

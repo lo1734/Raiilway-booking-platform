@@ -151,15 +151,15 @@
             }
         }
 
-        document.getElementById("registerForm").addEventListener("submit", function(event) {
-        event.preventDefault();
+    document.getElementById("registerForm").addEventListener("submit", function(event) {
+    event.preventDefault();
 
     let username = document.getElementById("registerUsername").value;
     let email = document.getElementById("registerEmail").value;
     let password = document.getElementById("registerPassword").value;
     let captchaValue = document.getElementById("captcha").innerText;
     let captchaInput = document.getElementById("captchaInput").value;
-    let csrfToken = document.getElementById("csrf_token").value;  // ✅ CSRF token
+    let csrfToken = document.getElementById("csrf_token").value;
 
     if (captchaValue !== captchaInput) {
         document.getElementById("registerMessage").innerText = "CAPTCHA incorrect. Try again!";
@@ -171,7 +171,7 @@
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken  // ✅ Include CSRF token
+            "X-CSRFToken": csrfToken
         },
         body: JSON.stringify({
             username: username,
@@ -186,7 +186,7 @@
         } else {
             document.getElementById("registerMessage").innerText = "Registration successful!";
             setTimeout(() => {
-                window.location.href = "/login";
+                window.location.href = data.redirect_url;
             }, 1500);
         }
     })
