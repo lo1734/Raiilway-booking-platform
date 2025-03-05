@@ -4,14 +4,12 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 import random
-from django.shortcuts import render
 import datetime
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
 import json
-
+from django.middleware.csrf import get_token
 
 
 # Home Page View
@@ -23,7 +21,6 @@ def home(request):
 
 otp_storage = {}
 
-from django.middleware.csrf import get_token
 
 
 def get_csrf_token(request):
@@ -156,6 +153,7 @@ def search_trains(request):
         **{travel_day: True}
     ).distinct()
 
+
     valid_intermediate_trains = []
     for source_station in intermediate_source_stations:
         train=source_station.train
@@ -184,23 +182,213 @@ def search_trains(request):
     })
 
 
-
 def book_ticket(request):
     if request.method == "POST":
-        user = request.user
-        train_id = request.POST.get('train_id')
-        seats = int(request.POST.get('seats'))
-        train = Train.objects.get(id=train_id)
+        # Verbose logging
+        print("DEBUG: Full POST data:", dict(request.POST))
+        print("DEBUG: Raw request body:", request.body)
 
-        if train.total_seats >= seats:
-            Booking.objects.create(user=user, train=train, journey_date=request.POST.get('date'), seats_booked=seats)
-            train.total_seats -= seats
-            train.save()
-            return JsonResponse({"message": "Booking Successful!"})
-        else:
-            return JsonResponse({"error": "Not enough seats available"}, status=400)
-    return JsonResponse({"error": "Invalid request"}, status=400)
+        try:
+            user = request.user
+            train_id = request.POST.get('train_id')
+            from_station = request.POST.get('from_station', '').strip()
+            to_station = request.POST.get('to_station', '').strip()
+            journey_date = request.POST.get('travel_date', '').strip()
 
+            # Seats extraction with multiple fallback mechanisms
+            seats_str = request.POST.get('seats', '')
+            print(f"DEBUG: Seats value extracted: {seats_str}")
+
+            # Comprehensive seats validation
+            if not seats_str:
+                # Try alternative extraction methods
+                seats_str = request.POST.getlist('seats', ['1'])[0]
+                print(f"DEBUG: Seats after alternative extraction: {seats_str}")
+
+            try:
+                seats = int(seats_str)
+                if seats <= 0:
+                    return JsonResponse({"error": "Number of seats must be positive"}, status=400)
+            except (ValueError, TypeError):
+                return JsonResponse({"error": f"Invalid seat count: {seats_str}"}, status=400)
+
+            # Rest of booking logic remains the same
+            try:
+                train = Train.objects.get(id=train_id)
+            except Train.DoesNotExist:
+                return JsonResponse({"error": "Train not found"}, status=404)
+
+            available_seats = get_available_seats(train, from_station, to_station, journey_date)
+
+            if available_seats is None:
+                return JsonResponse({"error": "Invalid station selection"}, status=400)
+
+            if available_seats >= seats:
+                Booking.objects.create(
+                    user=user,
+                    train=train,
+                    from_station=from_station,
+                    to_station=to_station,
+                    journey_date=journey_date,
+                    seats_booked=seats
+                )
+                return JsonResponse({"message": "Booking Successful!"})
+            else:
+                return JsonResponse({"error": "Not enough seats available"}, status=400)
+
+        except Exception as e:
+            print(f"DEBUG: Unexpected error - {str(e)}")
+            return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+# def get_available_seats(train, from_station, to_station, journey_date):
+#     """
+#     Returns the number of available seats for the given segment (from_station to to_station).
+#     """
+#     if not from_station or not to_station:
+#         print("DEBUG: Invalid station selection in get_available_seats")
+#         return None  # ✅ Return None if station values are missing
+#
+#     total_seats = train.total_seats
+#
+#     # ✅ Get all bookings for this train on the selected date
+#     bookings = Booking.objects.filter(train=train, journey_date=journey_date)
+#
+#     # ✅ Track seat usage per segment
+#     seat_usage = {station.station_name: 0 for station in train.stations.all()}
+#     seat_usage[train.source] = 0  # Include source station
+#     seat_usage[train.destination] = 0  # Include destination
+#
+#     # ✅ Deduct seats from relevant segments
+#     for booking in bookings:
+#         booked_from = booking.from_station
+#         booked_to = booking.to_station
+#
+#         # ✅ Reduce seat count for segments where current booking overlaps
+#         found_overlap = False
+#         for station in seat_usage:
+#             if station == booked_from:
+#                 found_overlap = True  # Start reducing seats
+#             if found_overlap:
+#                 seat_usage[station] += booking.seats_booked
+#             if station == booked_to:
+#                 break  # Stop reducing after booking ends
+#
+#     # ✅ Ensure valid comparison before calculation
+#     if from_station not in seat_usage or to_station not in seat_usage:
+#         print("DEBUG: from_station or to_station not found in seat_usage")
+#         return None  # ✅ Return None if station not found
+#
+#     # ✅ Get seat availability in the requested segment
+#     seat_values = [
+#         seat_usage[station] for station in seat_usage
+#         if station in seat_usage and station >= from_station and station < to_station
+#     ]
+#
+#     if not seat_values:
+#         print("DEBUG: No seat values found for segment.")
+#         return total_seats  # ✅ If no intermediate stations, assume all seats are free
+#
+#     available_seats = total_seats - max(seat_values)
+#
+#     return max(available_seats, 0)  # Ensure it doesn't go negative
+def get_available_seats(train, from_station, to_station, journey_date):
+    """
+    Returns the number of available seats for the given segment (from_station to to_station).
+    """
+    # Validate input parameters
+    if not from_station or not to_station:
+        print(f"DEBUG: Invalid station selection. From: {from_station}, To: {to_station}")
+        return None
+
+    # Get all stations for this train in order
+    train_stations = list(train.stations.order_by('station_order'))
+
+    # Find station indices
+    try:
+        from_index = next(i for i, station in enumerate(train_stations) if station.station_name == from_station)
+        to_index = next(i for i, station in enumerate(train_stations) if station.station_name == to_station)
+    except StopIteration:
+        print(f"DEBUG: Stations not found in train route. From: {from_station}, To: {to_station}")
+        print(f"DEBUG: Available stations: {[station.station_name for station in train_stations]}")
+        return None
+
+    # Validate station order
+    if from_index >= to_index:
+        print(f"DEBUG: Invalid station order. From index: {from_index}, To index: {to_index}")
+        return None
+
+    total_seats = train.total_seats
+
+    # Get all bookings for this train on the selected date
+    bookings = Booking.objects.filter(train=train, journey_date=journey_date)
+
+    # Initialize seat usage tracking
+    seat_usage = [0] * len(train_stations)
+
+    # Calculate seat usage
+    for booking in bookings:
+        try:
+            booking_from_index = next(
+                i for i, station in enumerate(train_stations) if station.station_name == booking.from_station)
+            booking_to_index = next(
+                i for i, station in enumerate(train_stations) if station.station_name == booking.to_station)
+        except StopIteration:
+            # Skip bookings with invalid stations
+            continue
+
+        # Mark seats as used for the booking's route
+        for i in range(booking_from_index, booking_to_index):
+            seat_usage[i] += booking.seats_booked
+
+    # Calculate available seats for the requested segment
+    segment_seat_usage = seat_usage[from_index:to_index]
+
+    if not segment_seat_usage:
+        print("DEBUG: No seat usage data found for segment")
+        return total_seats
+
+    max_segment_usage = max(segment_seat_usage)
+    available_seats = total_seats - max_segment_usage
+
+    print(
+        f"DEBUG: Available seats calculation - Total: {total_seats}, Segment Usage: {segment_seat_usage}, Available: {available_seats}")
+
+    return max(available_seats, 0)
+def booking_confirmation(request):
+    return render(request, "railway/booking_confirmation.html")
+
+
+
+# def confirm_booking(request):
+#     if request.method == "POST":
+#         train_id = request.POST.get("train_id")
+#         travel_date = request.POST.get("travel_date")
+#         passenger_names = request.POST.getlist("passenger_name[]")
+#         passenger_mobiles = request.POST.getlist("passenger_mobile[]")
+#         passenger_genders = request.POST.getlist("passenger_gender[]")
+#         passenger_emails = request.POST.getlist("passenger_email[]")
+#
+#         train = Train.objects.get(id=train_id)
+#
+#         if train.total_seats >= len(passenger_names):
+#             for i in range(len(passenger_names)):
+#                 Booking.objects.create(
+#                     user=request.user,
+#                     train=train,
+#                     journey_date=travel_date,
+#                     seats_booked=1,
+#                     from_station=train.source,
+#                     to_station=train.destination
+#                 )
+#
+#             train.total_seats -= len(passenger_names)
+#             train.save()
+#             return JsonResponse({"message": "Booking Successful!"})
+#         else:
+#             return JsonResponse({"error": "Not enough seats available"}, status=400)
+#
+#     return JsonResponse({"error": "Invalid request"}, status=400)
 
 # OTP Generation for Email Verification
 def generate_otp(request):

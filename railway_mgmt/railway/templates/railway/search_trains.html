@@ -39,6 +39,18 @@
         tr:hover {
             background-color: #f1f1f1;
         }
+        .book-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .book-btn:hover {
+            background: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -55,6 +67,7 @@
                     <th>Train Number</th>
                     <th>Train Name</th>
                     <th>Seats Left</th>
+                    <th>Action</th>  <!-- Added for Book Ticket button -->
                 </tr>
             </thead>
             <tbody>
@@ -63,6 +76,16 @@
                     <td>{{ train.train_number }}</td>
                     <td>{{ train.train_name }}</td>
                     <td>{{ train.total_seats }}</td>
+                    <td>
+                        <form action="{% url 'book_ticket' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="train_id" value="{{ train.id }}">
+                            <input type="hidden" name="travel_date" value="{{ travel_date }}">
+                            <input type="hidden" name="from_station" value="{{ source }}">
+                            <input type="hidden" name="to_station" value="{{ destination }}">
+                            <button type="submit" class="book-btn">Book Ticket</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -76,11 +76,13 @@ class IntermediateStation(models.Model):
 class Booking(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     train = models.ForeignKey(Train, on_delete=models.CASCADE)
+    from_station = models.CharField(max_length=100,default="Not Assigned")
+    to_station = models.CharField(max_length=100,default="Not Assigned")
     journey_date = models.DateField()
     seats_booked = models.IntegerField()
 
     def __str__(self):
-        return f"{self.user.username} - {self.train.train_name}"
+        return f"{self.user.username} - {self.train.train_name}({self.from_station} to {self.to_station})"
 
 
 from django.db.models.signals import post_save
