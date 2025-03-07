@@ -74,7 +74,11 @@
                 {% for train in trains %}
                 <tr>
                     <td>{{ train.train_number }}</td>
-                    <td>{{ train.train_name }}</td>
+                    <td>
+                        <a href="{% url 'train_route' train.id %}" class="train-link">
+                               {{ train.train_name }}
+                        </a>
+                    </td>
                     <td>{{ train.total_seats }}</td>
                     <td>
                         <form action="{% url 'book_ticket' %}" method="POST">

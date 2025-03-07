@@ -25,29 +25,27 @@ class Train(models.Model):
 
     boarding_time = models.TimeField(default=time(0, 0))
     departure_time = models.TimeField(default=time(23,59))
+    running_days = models.ManyToManyField(Day)
 
     # ✅ Boolean fields for weekdays
-    monday = models.BooleanField(default=False)
-    tuesday = models.BooleanField(default=False)
-    wednesday = models.BooleanField(default=False)
-    thursday = models.BooleanField(default=False)
-    friday = models.BooleanField(default=False)
-    saturday = models.BooleanField(default=False)
-    sunday = models.BooleanField(default=False)
+    DAYS_OF_WEEK = [
+        ("Monday", "Monday"),
+        ("Tuesday", "Tuesday"),
+        ("Wednesday", "Wednesday"),
+        ("Thursday", "Thursday"),
+        ("Friday", "Friday"),
+        ("Saturday", "Saturday"),
+        ("Sunday", "Sunday"),
+    ]
+    running_days = models.ManyToManyField(Day)
 
     def get_running_days(self):
-        days = []
-        if self.monday: days.append("Monday")
-        if self.tuesday: days.append("Tuesday")
-        if self.wednesday: days.append("Wednesday")
-        if self.thursday: days.append("Thursday")
-        if self.friday: days.append("Friday")
-        if self.saturday: days.append("Saturday")
-        if self.sunday: days.append("Sunday")
-        return ", ".join(days)
+        return ", ".join(self.running_days.values_list("name", flat=True))
 
     def __str__(self):
         return f"{self.train_name} ({self.train_number})"
+    # def __str__(self):
+    #     return f"{self.train_name} ({self.train_number})({self.train.DAYS_OF_WEEK})"
 
 # ✅ Intermediate Station Model
 class IntermediateStation(models.Model):
@@ -59,8 +57,10 @@ class IntermediateStation(models.Model):
     is_source = models.BooleanField(default=False)
     is_destination = models.BooleanField(default=False)
 
+    class Meta:
+        ordering=["arrival_time"]
     def __str__(self):
-        return self.station_name
+        return f"{self.station_name}(Train: {self.train.train_name})"
 
 
 # class IntermediateStation(models.Model):
