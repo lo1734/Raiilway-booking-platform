@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (home, user_login, user_logout, book_ticket,
                     generate_otp, search_trains, register, send_otp, verify_otp, get_csrf_token,
-                    booking_confirmation)
+                    booking_confirmation, train_route)
 
 urlpatterns = [
     path('', home, name='home'),  # Home page
@@ -17,6 +17,7 @@ urlpatterns = [
     path('booking-confirmation/', booking_confirmation, name='booking_confirmation'),
     path('generate-otp/', generate_otp, name='generate_otp'),  # OTP generation API
     path('get-csrf-token/', get_csrf_token, name='get_csrf_token'),
+    path('train-route/<int:train_id>/', train_route, name='train_route'),
     # path('confirm-booking/', confirm_booking, name='confirm_booking')
 
 ]
