@@ -62,7 +62,7 @@ class IntermediateStation(models.Model):
     def __str__(self):
         return self.station_name
 
-class TrainGraoh(models.Model):
+class TrainGraph(models.Model):
     train=models.ForeignKey(Train, on_delete=models.CASCADE,related_name="edges")
     from_station=models.ForeignKey(IntermediateStation,on_delete=models.CASCADE,related_name="departures")
     to_station=models.ForeignKey(IntermediateStation,on_delete=models.CASCADE,related_name="arrivals")
@@ -123,7 +123,7 @@ def create_train_graph(sender,instance,created, **kwargs):
         total_seats=instance.total_seats
 
         for i in range(len(stations)-1) :
-            TrainGraoh.objects.create(
+            TrainGraph.objects.create(
                 train=instance,
                 from_station=stations[i],
                 to_station=stations[i+1],
@@ -143,7 +143,7 @@ def update_seats_on_booking(sender,instance,created,**kwargs):
         ).first()
 
         if from_station and to_station:
-            path_edges=TrainGraoh.objects.filter(
+            path_edges=TrainGraph.objects.filter(
                 train=train,
                 from_station__arrival_time__gte=from_station.arrival_time,
                 to_station__arrival_time__lte=to_station.arrival_time
@@ -154,7 +154,7 @@ def update_seats_on_booking(sender,instance,created,**kwargs):
                 edge.save()
 
 def get_available_seats(train, from_station, to_station):
-    path_edges=TrainGraoh.objects.filter(
+    path_edges=TrainGraph.objects.filter(
         train=train,
         from_station__arrival_time__gte=from_station.arrival_time,
         to_station__arrival_time__lte=to_station.arrival_time
