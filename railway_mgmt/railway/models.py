@@ -15,41 +15,6 @@ class Day(models.Model):
 
     def __str__(self):
         return self.name
-# ✅ Train Model
-# class Train(models.Model):
-#     train_number = models.CharField(max_length=10, unique=True)
-#     train_name = models.CharField(max_length=100)
-#     source = models.CharField(max_length=100)
-#     destination = models.CharField(max_length=100)
-#     total_seats = models.IntegerField()
-#
-#     boarding_time = models.TimeField(default=time(0, 0))
-#     departure_time = models.TimeField(default=time(23,59))
-#
-#     # ✅ Boolean fields for weekdays
-#     monday = models.BooleanField(default=False)
-#     tuesday = models.BooleanField(default=False)
-#     wednesday = models.BooleanField(default=False)
-#     thursday = models.BooleanField(default=False)
-#     friday = models.BooleanField(default=False)
-#     saturday = models.BooleanField(default=False)
-#     sunday = models.BooleanField(default=False)
-#
-#     def get_running_days(self):
-#         days = []
-#         if self.monday: days.append("Monday")
-#         if self.tuesday: days.append("Tuesday")
-#         if self.wednesday: days.append("Wednesday")
-#         if self.thursday: days.append("Thursday")
-#         if self.friday: days.append("Friday")
-#         if self.saturday: days.append("Saturday")
-#         if self.sunday: days.append("Sunday")
-#         return ", ".join(days)
-#
-#     def __str__(self):
-#         return f"{self.train_name} ({self.train_number})"
-
-# ✅ Intermediate Station Model
 from django.db import models
 from datetime import time
 
@@ -126,8 +91,7 @@ from django.dispatch import receiver
 
 @receiver(post_save, sender=Train)
 def add_source_and_destination(sender, instance, created, **kwargs):
-    if created:  # ✅ Only add when a new train is created
-        # ✅ Check if source and destination already exist in IntermediateStation (avoid duplicates)
+    if created:
         existing_source = IntermediateStation.objects.filter(train=instance, station_name=instance.source, is_source=True).exists()
         existing_destination = IntermediateStation.objects.filter(train=instance, station_name=instance.destination, is_destination=True).exists()
 
