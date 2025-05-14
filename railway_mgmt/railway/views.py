@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
+from django.views.decorators.http import require_http_methods
+
 from .models import Train, Booking, IntermediateStation, CustomUser, TrainGraph
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
@@ -10,6 +12,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.middleware.csrf import get_token
+import traceback
 
 
 # Home Page View
@@ -114,7 +117,6 @@ def search_trains(request):
     if not source or not destination or not travel_date:
         return render(request, "railway/search_trains.html", {"error": "Missing parameters"})
 
-    # Get the day of the week (Monday, Tuesday, etc.)
     travel_day = datetime.datetime.strptime(travel_date, "%Y-%m-%d").strftime("%A").lower()
 
     # Get direct trains
@@ -172,65 +174,200 @@ def search_trains(request):
 
 
 
+# def book_ticket(request):
+#     if request.method == "POST":
+#         try:
+#             user = request.user
+#             data = request.POST  # Extract data
+#
+#             train_id = data.get('train_id', '').strip()
+#             from_station = data.get('from_station', '').strip().lower()
+#             to_station = data.get('to_station', '').strip().lower()
+#             journey_date = data.get('travel_date', '').strip()
+#             seats_str = data.get('seats', '1').strip()
+#
+#             try:
+#                 train_id = int(train_id)
+#                 train = Train.objects.get(id=train_id)
+#             except (ValueError, Train.DoesNotExist):
+#                 return JsonResponse({"error": "Invalid train ID or train not found"}, status=400)
+#
+#             try:
+#                 seats = int(seats_str)
+#                 if seats <= 0:
+#                     return JsonResponse({"error": "Seats must be a positive number"}, status=400)
+#             except ValueError:
+#                 return JsonResponse({"error": f"Invalid seat count: {seats_str}"}, status=400)
+#
+#             available_seats = get_available_seats(train, from_station, to_station, journey_date)
+#             if available_seats is None:
+#                 return JsonResponse({"error": "Invalid station selection"}, status=400)
+#
+#             if available_seats >= seats:
+#                 Booking.objects.create(
+#                     user=user,
+#                     train=train,
+#                     from_station=from_station,
+#                     to_station=to_station,
+#                     journey_date=journey_date,
+#                     seats_booked=seats
+#                 )
+#                 return JsonResponse({"message": "Booking Successful!"})
+#             else:
+#                 return JsonResponse({"error": "Not enough seats available"}, status=400)
+#
+#         except Exception as e:
+#             print(f"DEBUG: Unexpected error - {str(e)}")
+#             return JsonResponse({"error": f"Unexpected error: {str(e)}"}, status=500)
+#
+#     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+# def get_available_seats(train, from_station, to_station, journey_date):
+#     try:
+#         # Fetch available seats for the given train and stations
+#         train_graph = TrainGraph.objects.get(
+#             train=train,
+#             from_station__station_name__iexact=from_station,  # Case-insensitive match
+#             to_station__station_name__iexact=to_station
+#         )
+#         return train_graph.available_seats
+#     except TrainGraph.DoesNotExist:
+#         return None  # Indicates invalid station selection
+from django.views.decorators.csrf import csrf_exempt
+@csrf_exempt
+@require_http_methods(["POST"])
 def book_ticket(request):
-    if request.method == "POST":
-        try:
-            user = request.user
-            data = request.POST  # Extract data
-
-            train_id = data.get('train_id', '').strip()
-            from_station = data.get('from_station', '').strip().lower()
-            to_station = data.get('to_station', '').strip().lower()
-            journey_date = data.get('travel_date', '').strip()
-            seats_str = data.get('seats', '1').strip()
-
-            try:
-                train_id = int(train_id)
-                train = Train.objects.get(id=train_id)
-            except (ValueError, Train.DoesNotExist):
-                return JsonResponse({"error": "Invalid train ID or train not found"}, status=400)
-
-            try:
-                seats = int(seats_str)
-                if seats <= 0:
-                    return JsonResponse({"error": "Seats must be a positive number"}, status=400)
-            except ValueError:
-                return JsonResponse({"error": f"Invalid seat count: {seats_str}"}, status=400)
-
-            available_seats = get_available_seats(train, from_station, to_station, journey_date)
-            if available_seats is None:
-                return JsonResponse({"error": "Invalid station selection"}, status=400)
-
-            if available_seats >= seats:
-                Booking.objects.create(
-                    user=user,
-                    train=train,
-                    from_station=from_station,
-                    to_station=to_station,
-                    journey_date=journey_date,
-                    seats_booked=seats
-                )
-                return JsonResponse({"message": "Booking Successful!"})
-            else:
-                return JsonResponse({"error": "Not enough seats available"}, status=400)
-
-        except Exception as e:
-            print(f"DEBUG: Unexpected error - {str(e)}")
-            return JsonResponse({"error": f"Unexpected error: {str(e)}"}, status=500)
-
-    return JsonResponse({"error": "Invalid request method"}, status=400)
-
-def get_available_seats(train, from_station, to_station, journey_date):
     try:
-        # Fetch available seats for the given train and stations
-        train_graph = TrainGraph.objects.get(
+        if request.content_type == 'application/json':
+            body = request.body.decode('utf-8')
+            print("[DEBUG] Raw request body:", body)
+            data = json.loads(body)
+        else:
+            # fallback for form data
+            data = request.POST.dict()
+            print("[DEBUG] Fallback to form data:", data)
+
+        data = json.loads(request.body)
+        print("[DEBUG] Booking request data:", data)
+
+        user_id = data.get("user_id")
+        train_id = data.get("train_id")
+        from_station = data.get("from_station")
+        to_station = data.get("to_station")
+        journey_date = data.get("journey_date")
+        seats_required = int(data.get("seats_required"))
+
+        print(f"[DEBUG] Received Booking -> User: {user_id}, Train: {train_id}, From: {from_station}, To: {to_station}, Date: {journey_date}, Seats: {seats_required}")
+
+        user = CustomUser.objects.get(id=user_id)
+        train = Train.objects.get(id=train_id)
+
+        from_station_obj = IntermediateStation.objects.filter(train=train, station_name=from_station).first()
+        to_station_obj = IntermediateStation.objects.filter(train=train, station_name=to_station).first()
+
+        if not from_station_obj or not to_station_obj:
+            print("[DEBUG] One of the stations was not found in IntermediateStation.")
+            return JsonResponse({"error": "Invalid from/to station"}, status=400)
+
+        if from_station_obj.arrival_time >= to_station_obj.arrival_time:
+            print("[DEBUG] Invalid direction (from_station comes after to_station)")
+            return JsonResponse({"error": "Invalid direction"}, status=400)
+
+        path_edges = TrainGraph.objects.filter(
             train=train,
-            from_station__station_name__iexact=from_station,  # Case-insensitive match
-            to_station__station_name__iexact=to_station
+            from_station__arrival_time__gte=from_station_obj.arrival_time,
+            to_station__arrival_time__lte=to_station_obj.arrival_time
         )
-        return train_graph.available_seats
-    except TrainGraph.DoesNotExist:
-        return None  # Indicates invalid station selection
+
+        print(f"[DEBUG] Found path edges: {[str(e) for e in path_edges]}")
+
+        if not path_edges.exists():
+            print("[DEBUG] No valid edges found in TrainGraph.")
+            return JsonResponse({"error": "No valid path"}, status=400)
+
+        min_available = min(e.available_seats for e in path_edges)
+        print(f"[DEBUG] Minimum available seats along path: {min_available}")
+
+        if seats_required > min_available:
+            print("[DEBUG] Not enough seats available.")
+            return JsonResponse({"error": "Not enough seats available"}, status=400)
+
+        # Create the booking
+        booking = Booking.objects.create(
+            user=user,
+            train=train,
+            from_station=from_station,
+            to_station=to_station,
+            journey_date=journey_date,
+            # journey_date=parse_date(journey_date),
+            seats_booked=seats_required
+        )
+        booking.save()
+
+        print("[DEBUG] Booking created successfully.")
+        return JsonResponse({"message": "Booking successful"}, status=201)
+
+    except Exception as e:
+        print(f"[ERROR] Exception occurred: {str(e)}")
+        traceback.print_exc()
+        return JsonResponse({"error": f"Internal Server Error: {str(e)}"}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_available_trains(request):
+    try:
+        source = request.GET.get("source", "").strip().lower()
+        destination = request.GET.get("destination", "").strip().lower()
+        travel_date = request.GET.get("date", "").strip()
+
+        print(f"[DEBUG] Get available trains -> Source: {source}, Destination: {destination}, Date: {travel_date}")
+
+        if not source or not destination or not travel_date:
+            print("[DEBUG] Missing input fields.")
+            return JsonResponse({"error": "Missing input fields"}, status=400)
+
+        travel_day = datetime.datetime.strptime(travel_date, "%Y-%m-%d").strftime("%A").lower()
+        print(f"[DEBUG] Travel day is: {travel_day}")
+
+        matching_trains = []
+        all_trains = Train.objects.filter(**{travel_day: True})
+
+        for train in all_trains:
+            stations = IntermediateStation.objects.filter(train=train).order_by("arrival_time")
+            station_names = [s.station_name.lower() for s in stations]
+
+            if source in station_names and destination in station_names:
+                src_index = station_names.index(source)
+                dst_index = station_names.index(destination)
+                print(f"[DEBUG] Checking train: {train.train_name}, Source Index: {src_index}, Destination Index: {dst_index}")
+
+                if src_index < dst_index:
+                    from_station = stations[src_index]
+                    to_station = stations[dst_index]
+                    path_edges = TrainGraph.objects.filter(
+                        train=train,
+                        from_station__arrival_time__gte=from_station.arrival_time,
+                        to_station__arrival_time__lte=to_station.arrival_time
+                    )
+                    available_seats = min(edge.available_seats for edge in path_edges) if path_edges.exists() else 0
+                    print(f"[DEBUG] Available seats in train {train.train_name}: {available_seats}")
+
+                    if available_seats > 0:
+                        matching_trains.append({
+                            "train_id": train.id,
+                            "train_name": train.train_name,
+                            "train_number": train.train_number,
+                            "available_seats": available_seats
+                        })
+
+        print(f"[DEBUG] Matching trains found: {matching_trains}")
+        return JsonResponse({"available_trains": matching_trains}, status=200)
+
+    except Exception as e:
+        print(f"[ERROR] Exception in get_available_trains: {str(e)}")
+        traceback.print_exc()
+        return JsonResponse({"error":f"Internal Server Error: {str(e)}"},status=500)
 
 def booking_confirmation(request):
     return render(request, "railway/booking_confirmation.html")

@@ -5,11 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6cbf8b66-a4b1-41d9-8bab-049a8c69925a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/Railway_booking_system.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Railway_booking_system.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/railway_mgmt/railway/migrations/0002_traingraoh.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/railway_mgmt/railway/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/railway_mgmt/railway/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/railway_mgmt/railway/templates/railway/search_trains.html" beforeDir="false" afterPath="$PROJECT_DIR$/railway_mgmt/railway/templates/railway/search_trains.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/railway_mgmt/railway/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/railway_mgmt/railway/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -20,18 +19,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "lo1734"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;lo1734&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/lo1734/Raiilway-booking-platform.git",
-    "accountId": "bc90646c-cca7-4675-8ed8-32ebd503449e"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/lo1734/Raiilway-booking-platform.git&quot;,
+    &quot;accountId&quot;: &quot;bc90646c-cca7-4675-8ed8-32ebd503449e&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -40,13 +39,13 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "ticket__booking__feature",
-    "last_opened_file_path": "/Users/lohith/Desktop/final projects/Railway_booking_system"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;ticket__booking__feature&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/lohith/Desktop/final projects/Railway_booking_system&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

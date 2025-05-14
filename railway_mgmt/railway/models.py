@@ -72,7 +72,7 @@ class TrainGraph(models.Model):
         unique_together=("train","from_station","to_station")
 
     def __str__(self):
-        return f"{self.from_station.station_name} -> {self.to_station.staion_name} : {self.available_seats} seats"
+        return f"{self.from_station.station_name} -> {self.to_station.station_name} : {self.available_seats} seats"
 
 class Booking(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
