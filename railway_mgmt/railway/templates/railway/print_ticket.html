@@ -1,0 +1,26 @@
+<h2>Your Ticket Details</h2>
+<table border="1" cellpadding="10">
+  <tr>
+    <th>Name</th>
+    <th>Age</th>
+    <th>Gender</th>
+    <th>Train</th>
+    <th>Date</th>
+    <th>From</th>
+    <th>To</th>
+  </tr>
+  {% for p in passengers %}
+  <tr>
+    <td>{{ p.name }}</td>
+    <td>{{ p.age }}</td>
+    <td>{{ p.gender }}</td>
+    <td>{{ p.train.train_name }}</td>
+    <td>{{ p.travel_date }}</td>
+    <td>{{ p.from_station }}</td>
+    <td>{{ p.to_station }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<br>
+<button onclick="window.print()">🖨️ Print Ticket</button>

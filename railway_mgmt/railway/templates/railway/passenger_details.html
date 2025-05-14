@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Enter Passenger Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 30px;
+      color: #333;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .passenger {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    button {
+      background-color: #2563eb;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    #add-btn {
+      margin-right: 10px;
+    }
+
+    .form-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h2>Enter Passenger Details</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <div id="passenger-forms">
+      <div class="passenger">
+        <input type="text" name="name[]" placeholder="Name" required>
+        <input type="number" name="age[]" placeholder="Age" required>
+        <select name="gender[]">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-buttons">
+      <button type="button" id="add-btn" onclick="addPassenger()">➕ Add Passenger</button>
+      <button type="submit">✅ Confirm Booking</button>
+    </div>
+  </form>
+
+  <script>
+    function addPassenger() {
+      const container = document.getElementById('passenger-forms');
+      const div = document.createElement('div');
+      div.classList.add('passenger');
+      div.innerHTML = `
+        <input type="text" name="name[]" placeholder="Name" required>
+        <input type="number" name="age[]" placeholder="Age" required>
+        <select name="gender[]">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      `;
+      container.appendChild(div);
+    }
+  </script>
+
+</body>
+</html>

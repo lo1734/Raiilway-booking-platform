@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import time
 from calendar import Day
+from django.conf import settings
 
 # ✅ Custom User Model
 class CustomUser(AbstractUser):
@@ -59,6 +60,7 @@ class IntermediateStation(models.Model):
 
     is_source = models.BooleanField(default=False)
     is_destination = models.BooleanField(default=False)
+    station_order=models.IntegerField(default=0)
 
     def __str__(self):
         return self.station_name
@@ -84,6 +86,21 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.train.train_name}({self.from_station} to {self.to_station})"
+
+
+class Passenger(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    train = models.ForeignKey(Train, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    age = models.PositiveIntegerField()
+    gender = models.CharField(max_length=10, choices=[("Male", "Male"), ("Female", "Female")])
+    travel_date = models.DateField()
+    from_station = models.CharField(max_length=100)
+    to_station = models.CharField(max_length=100)
+    booking_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.train.train_name})"
 
 
 from django.db.models.signals import post_save

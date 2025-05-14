@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
-from .models import Train, Booking, IntermediateStation,CustomUser
+from .models import Train, Booking, IntermediateStation, CustomUser, Passenger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -10,6 +10,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.middleware.csrf import get_token
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Sum
+
 
 
 # Home Page View
@@ -171,65 +175,101 @@ def search_trains(request):
     })
 
 
+@login_required(login_url='/login/')
 def book_ticket(request):
     if request.method == "POST":
         # Verbose logging
+        user=request.user
+        if not user.is_authenticated:
+            redirect('login.html')
         print("DEBUG: Full POST data:", dict(request.POST))
         print("DEBUG: Raw request body:", request.body)
 
         try:
-            user = request.user
+            # user = request.user
             train_id = request.POST.get('train_id')
             from_station = request.POST.get('from_station', '').strip()
             to_station = request.POST.get('to_station', '').strip()
-            journey_date = request.POST.get('travel_date', '').strip()
+            travel_date = request.POST.get('travel_date', '').strip()
 
-            # Seats extraction with multiple fallback mechanisms
-            seats_str = request.POST.get('seats', '')
-            print(f"DEBUG: Seats value extracted: {seats_str}")
+            request.session['booking_data'] = {
+                'train_id': train_id,
+                'from_station': from_station,
+                'to_station': to_station,
+                'travel_date': travel_date
+            }
 
-            # Comprehensive seats validation
-            if not seats_str:
-                # Try alternative extraction methods
-                seats_str = request.POST.getlist('seats', ['1'])[0]
-                print(f"DEBUG: Seats after alternative extraction: {seats_str}")
-
-            try:
-                seats = int(seats_str)
-                if seats <= 0:
-                    return JsonResponse({"error": "Number of seats must be positive"}, status=400)
-            except (ValueError, TypeError):
-                return JsonResponse({"error": f"Invalid seat count: {seats_str}"}, status=400)
-
-            # Rest of booking logic remains the same
-            try:
-                train = Train.objects.get(id=train_id)
-            except Train.DoesNotExist:
-                return JsonResponse({"error": "Train not found"}, status=404)
-
-            available_seats = get_available_seats(train, from_station, to_station, journey_date)
-
-            if available_seats is None:
-                return JsonResponse({"error": "Invalid station selection"}, status=400)
-
-            if available_seats >= seats:
-                Booking.objects.create(
-                    user=user,
-                    train=train,
-                    from_station=from_station,
-                    to_station=to_station,
-                    journey_date=journey_date,
-                    seats_booked=seats
-                )
-                return JsonResponse({"message": "Booking Successful!"})
-            else:
-                return JsonResponse({"error": "Not enough seats available"}, status=400)
+            return redirect('passenger_details')
 
         except Exception as e:
             print(f"DEBUG: Unexpected error - {str(e)}")
             return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
+# def book_ticket(request):
+#     if request.method == "POST":
+#         # Verbose logging
+#         user=request.user
+#         if not user.is_authenticated:
+#             redirect('login.html')
+#         print("DEBUG: Full POST data:", dict(request.POST))
+#         print("DEBUG: Raw request body:", request.body)
+#
+#         try:
+#             user = request.user
+#             train_id = request.POST.get('train_id')
+#             from_station = request.POST.get('from_station', '').strip()
+#             to_station = request.POST.get('to_station', '').strip()
+#             journey_date = request.POST.get('travel_date', '').strip()
+#
+#             # Seats extraction with multiple fallback mechanisms
+#             # seats_str = request.POST.get('seats', '')
+#             # print(f"DEBUG: Seats value extracted: {seats_str}")
+#
+#             # Comprehensive seats validation
+#             # if not seats_str:
+#             #     # Try alternative extraction methods
+#             #     seats_str = request.POST.getlist('seats', ['1'])[0]
+#             #     print(f"DEBUG: Seats after alternative extraction: {seats_str}")
+#
+#             # try:
+#             #     seats = int(seats_str)
+#             #     if seats <= 0:
+#             #         return JsonResponse({"error": "Number of seats must be positive"}, status=400)
+#             # except (ValueError, TypeError):
+#             #     return JsonResponse({"error": f"Invalid seat count: {seats_str}"}, status=400)
+#
+#             # Rest of booking logic remains the same
+#             try:
+#                 train = Train.objects.get(id=train_id)
+#             except Train.DoesNotExist:
+#                 return JsonResponse({"error": "Train not found"}, status=404)
+#
+#             available_seats = get_available_seats(train, from_station, to_station, journey_date)
+#
+#             if available_seats is None:
+#                 return JsonResponse({"error": "Invalid station selection"}, status=400)
+#
+#             if available_seats >= seats:
+#                 Booking.objects.create(
+#                     user=user,
+#                     train=train,
+#                     from_station=from_station,
+#                     to_station=to_station,
+#                     journey_date=journey_date,
+#                     seats_booked=seats
+#                 )
+#                 return JsonResponse({"message": "Booking Successful!"})
+#             else:
+#                 return JsonResponse({"error": "Not enough seats available"}, status=400)
+#
+#         except Exception as e:
+#             print(f"DEBUG: Unexpected error - {str(e)}")
+#             return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
+#
+#     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 def get_available_seats(train, from_station, to_station, journey_date):
     """
@@ -315,3 +355,98 @@ def generate_otp(request):
         request.session['otp'] = otp
         return JsonResponse({"otp": otp})
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+@login_required(login_url='/login/')
+def passenger_details(request):
+    booking_data = request.session.get('booking_data')
+    if not booking_data:
+        messages.error(request, "No booking data found.")
+        return redirect('home')
+
+    if request.method == 'POST':
+        names = request.POST.getlist('name[]')
+        ages = request.POST.getlist('age[]')
+        genders = request.POST.getlist('gender[]')
+
+        num_passengers = len(names)
+
+        train = Train.objects.get(id=booking_data['train_id'])
+
+        # ✅ Check seat availability
+        total_booked = Booking.objects.filter(
+            train=train,
+            journey_date=booking_data['travel_date']
+        ) .aggregate(Sum('seats_booked'))['seats_booked__sum'] or 0
+
+
+        # .aggregate(models.Sum('seats_booked'))['seats_booked__sum'] or 0
+        print("total_seats type:", type(total_booked))
+        print(total_booked)
+        # print("segment_data type:", type(segment_data))
+        # booked_seats=total_booked['seats__sum']
+        # available_seats = train.total_seats - booked_seats
+        available_seats=train.total_seats-total_booked
+
+        if num_passengers > available_seats:
+            messages.error(request, f"Only {available_seats} seats available!")
+            return render(request, 'passenger_details.html')
+
+        # ✅ Save booking
+        Booking.objects.create(
+            user=request.user,
+            train=train,
+            from_station=booking_data['from_station'],
+            to_station=booking_data['to_station'],
+            journey_date=booking_data['travel_date'],
+            seats_booked=num_passengers
+        )
+
+        messages.success(request, "Booking successful!")
+        return redirect('home')
+
+    return render(request, 'railway/passenger_details.html')
+
+@login_required(login_url='/login/')
+def enter_passenger_details(request):
+    if request.method == 'POST':
+        names = request.POST.getlist('name[]')
+        ages = request.POST.getlist('age[]')
+        genders = request.POST.getlist('gender[]')
+
+        train_id = request.session.get('train_id')
+        travel_date = request.session.get('travel_date')
+        from_station = request.session.get('from_station')
+        to_station = request.session.get('to_station')
+
+        train = Train.objects.get(id=train_id)
+        travel_date = parse_date(travel_date)
+
+        for name, age, gender in zip(names, ages, genders):
+            Passenger.objects.create(
+                user=request.user,
+                train=train,
+                name=name,
+                age=int(age),
+                gender=gender,
+                travel_date=travel_date,
+                from_station=from_station,
+                to_station=to_station
+            )
+
+        return redirect('print_ticket')  # Redirect to print ticket
+
+    return render(request, 'enter_passenger_details.html')
+
+@login_required(login_url='/login/')
+def print_ticket(request):
+    train_id = request.session.get('train_id')
+    travel_date = request.session.get('travel_date')
+
+    passengers = Passenger.objects.filter(
+        user=request.user,
+        train_id=train_id,
+        travel_date=travel_date
+    )
+
+    return render(request, 'print_ticket.html', {'passengers': passengers})
