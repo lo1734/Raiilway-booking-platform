@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
+from werkzeug.http import parse_date
+
 from .models import Train, Booking, IntermediateStation, CustomUser, Passenger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
@@ -162,6 +164,10 @@ def search_trains(request):
 
     available_trains = list(set(direct_trains) | set(valid_intermediate_trains))
 
+    for train in available_trains:
+        booking_info=Booking.objects.filter(train=train,journey_date=travel_date).aggregate(total=Sum('seats_booked'))
+        booked=booking_info['total'] or 0
+        train.total_Seats_left= train.total_seats - booked
     # print(f"Searching trains from {source} to {destination} on {travel_day}")
     # print(f"Direct Trains Found: {direct_trains}")
     # print(f"Source Trains: {source_trains}")
@@ -403,7 +409,7 @@ def passenger_details(request):
         )
 
         messages.success(request, "Booking successful!")
-        return redirect('home')
+        # return redirect('home')
 
     return render(request, 'railway/passenger_details.html')
 

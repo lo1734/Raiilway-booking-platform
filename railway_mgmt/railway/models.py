@@ -4,7 +4,6 @@ from datetime import time
 from calendar import Day
 from django.conf import settings
 
-# ✅ Custom User Model
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)  # Ensure unique emails
 
