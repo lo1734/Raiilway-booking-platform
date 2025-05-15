@@ -1,0 +1,49 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+
+    background-image: url('images/Train1.png'); /* Update path if necessary */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.container {
+    background: rgba(255, 255, 255, 0.9); /* Slight transparency so background image is visible */
+    padding: 20px;
+    margin: 20px auto;
+    width: 70%;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px gray;
+    text-align: left;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+th {
+    background-color: #28a745;
+    color: white;
+}
+tr:hover {
+    background-color: #f1f1f1;
+}
+.book-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+}
+.book-btn:hover {
+    background: #0056b3;
+}

@@ -1,115 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Railway Management System</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            text-align: center;
-        }
-        nav {
-            background: #333;
-            color: white;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-        }
-        nav ul li {
-            margin: 0 10px;
-        }
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-        }
-        .auth-buttons {
-            display: flex;
-        }
-        .auth-buttons a {
-            background: #28a745;
-            color: white;
-            padding: 8px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-left: 10px;
-        }
-        form {
-            background: white;
-            padding: 20px;
-            margin: 20px auto;
-            width: 50%;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px gray;
-        }
-        input, button {
-            margin: 10px;
-            padding: 10px;
-            width: 80%;
-            display: block;
-        }
-        button {
-            background: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body>
     <nav>
         <h1>Railway Management System</h1>
-        <div style="display: flex; align-items: center;">
-            <ul>
-<!--                <li><a href="index.html">Home</a></li>-->
-<!--                <li><a href="admin.html">Admin Panel</a></li>-->
-            </ul>
-            <div class="auth-buttons">
-<!--                <a href="login.html">Login</a>-->
-<!--                <a href="register.html">Register</a>-->
-                <a href="{% url 'login' %}">Login</a>
-                <a href="{% url 'register' %}">Register</a>
-            </div>
+        <div class="auth-buttons">
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'register' %}">Register</a>
         </div>
     </nav>
 
-    <main>
+    <div class="main-content">
         <h2>Welcome to the Railway Management System</h2>
         <p>Book your train tickets easily and securely.</p>
 
-        <h3>Search for Trains</h3>
         <form id="searchForm" action="{% url 'search_trains' %}" method="GET">
+            <p>Search for Trains</p>
             <input type="text" name="source" id="source" placeholder="Source" required>
             <input type="text" name="destination" id="destination" placeholder="Destination" required>
             <input type="date" name="date" id="travelDate" required>
             <button type="submit">Search</button>
         </form>
-        <p id="search_trains"></p>
-    </main>
+    </div>
 
-
-        <script>
-            document.getElementById("searchForm").addEventListener("submit", function(event) {
-<!--            event.preventDefault();-->
+    <script>
+        document.getElementById("searchForm").addEventListener("submit", function(event) {
             let source = document.getElementById("source").value;
             let destination = document.getElementById("destination").value;
-             let travelDate = document.getElementById("travelDate").value;
+            let travelDate = document.getElementById("travelDate").value;
             window.location.href = `/search_trains/?source=${source}&destination=${destination}&date=${travelDate}`;
-    });
-</script>
-
+        });
+    </script>
 </body>
 </html>
 
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    {% load static %}-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Railway Management System</title>-->
+<!--    <link rel="stylesheet" href="{% static 'styles.css' %}">-->
+<!--    <style>-->
+<!--        body, html {-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            height: 100%;-->
+<!--            font-family: Arial, sans-serif;-->
+<!--        }-->
+
+<!--        body {-->
+<!--            background: url("{% static 'images/Train.png' %}") no-repeat center center fixed;-->
+<!--            background-size: cover;-->
+<!--            color: #fff;-->
+<!--        }-->
+
+<!--        nav {-->
+<!--            background: rgba(0, 0, 0, 0.7);-->
+<!--            color: white;-->
+<!--            padding: 10px 20px;-->
+<!--            display: flex;-->
+<!--            justify-content: space-between;-->
+<!--            align-items: center;-->
+<!--        }-->
+
+<!--        nav ul {-->
+<!--            list-style: none;-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            display: flex;-->
+<!--        }-->
+
+<!--        nav ul li {-->
+<!--            margin: 0 10px;-->
+<!--        }-->
+
+<!--        nav ul li a, .auth-buttons a {-->
+<!--            color: white;-->
+<!--            text-decoration: none;-->
+<!--        }-->
+
+<!--        .auth-buttons {-->
+<!--            display: flex;-->
+<!--        }-->
+
+<!--        .auth-buttons a {-->
+<!--            background: #28a745;-->
+<!--            color: white;-->
+<!--            padding: 8px 15px;-->
+<!--            text-decoration: none;-->
+<!--            border-radius: 5px;-->
+<!--            margin-left: 10px;-->
+<!--        }-->
+
+<!--        .main-content {-->
+<!--            display: flex;-->
+<!--            flex-direction: column;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--            height: calc(100% - 60px); /* subtract nav height */-->
+<!--            text-align: center;-->
+<!--        }-->
+
+<!--        h2, p {-->
+<!--            text-shadow: 1px 1px 3px #000;-->
+<!--        }-->
+
+<!--        form {-->
+<!--            background: rgba(255, 255, 255, 0.9);-->
+<!--            padding: 50px;-->
+<!--            border-radius: 10px;-->
+<!--            width: 300px;-->
+<!--            box-shadow: 0 0 15px rgba(0,0,0,0.5);-->
+<!--            color: Black;-->
+<!--        }-->
+
+<!--        input, button {-->
+<!--            margin: 5px 0;-->
+<!--            padding: 10px;-->
+<!--            width: 100%;-->
+<!--            border: 1px solid #ccc;-->
+<!--            border-radius: 5px;-->
+<!--        }-->
+
+<!--        button {-->
+<!--            background: #28a745;-->
+<!--            color: white;-->
+<!--            border: none;-->
+<!--            cursor: pointer;-->
+<!--        }-->
+
+<!--        button:hover {-->
+<!--            background: #218838;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <nav>-->
+<!--        <h1>Railway Management System</h1>-->
+<!--        <div class="auth-buttons">-->
+<!--            <a href="{% url 'login' %}">Login</a>-->
+<!--            <a href="{% url 'register' %}">Register</a>-->
+<!--        </div>-->
+<!--    </nav>-->
+
+<!--    <div class="main-content">-->
+<!--        <h2>Welcome to the Railway Management System</h2>-->
+<!--        <p>Book your train tickets easily and securely.</p>-->
+
+<!--        <form id="searchForm" action="{% url 'search_trains' %}" method="GET">-->
+<!--            <p>Search for Trains</p>-->
+<!--            <input type="text" name="source" id="source" placeholder="Source" required>-->
+<!--            <input type="text" name="destination" id="destination" placeholder="Destination" required>-->
+<!--            <input type="date" name="date" id="travelDate" required>-->
+<!--            <button type="submit">Search</button>-->
+<!--        </form>-->
+<!--    </div>-->
+
+<!--    <script>-->
+<!--        document.getElementById("searchForm").addEventListener("submit", function(event) {-->
+<!--            let source = document.getElementById("source").value;-->
+<!--            let destination = document.getElementById("destination").value;-->
+<!--            let travelDate = document.getElementById("travelDate").value;-->
+<!--            window.location.href = `/search_trains/?source=${source}&destination=${destination}&date=${travelDate}`;-->
+<!--        });-->
+<!--    </script>-->
+<!--</body>-->
+<!--</html>-->
 

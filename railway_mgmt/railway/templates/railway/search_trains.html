@@ -1,57 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Available Trains</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            text-align: center;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            margin: 20px auto;
-            width: 70%;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px gray;
-            text-align: left;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #28a745;
-            color: white;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .book-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            cursor: pointer;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-        .book-btn:hover {
-            background: #0056b3;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'styles1.css' %}">
 </head>
 <body>
     <div class="container">
@@ -67,7 +21,7 @@
                     <th>Train Number</th>
                     <th>Train Name</th>
                     <th>Seats Left</th>
-                    <th>Action</th>  <!-- Added for Book Ticket button -->
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -79,10 +33,10 @@
                                {{ train.train_name }}
                         </a>
                     </td>
-                    <td>{{ train.total_Seats_left}}</td>
+                    <td>{{ train.total_Seats_left }}</td>
                     <td>
                         {% if train.total_Seats_left > 0 %}
-                            <form action="{% url 'book_ticket' %}" method="POST">
+                            <form action="{% url 'passenger_details' %}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="train_id" value="{{ train.id }}">
                                 <input type="hidden" name="travel_date" value="{{ travel_date }}">
@@ -104,3 +58,112 @@
     </div>
 </body>
 </html>
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Available Trains</title>-->
+<!--    <link rel="stylesheet" href="styles.css">-->
+<!--    <style>-->
+<!--        body {-->
+<!--            font-family: Arial, sans-serif;-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            background-color: #f4f4f4;-->
+<!--            text-align: center;-->
+<!--        }-->
+<!--        .container {-->
+<!--            background: white;-->
+<!--            padding: 20px;-->
+<!--            margin: 20px auto;-->
+<!--            width: 70%;-->
+<!--            border-radius: 8px;-->
+<!--            box-shadow: 0px 0px 10px gray;-->
+<!--            text-align: left;-->
+<!--        }-->
+<!--        table {-->
+<!--            width: 100%;-->
+<!--            border-collapse: collapse;-->
+<!--            margin-top: 20px;-->
+<!--        }-->
+<!--        th, td {-->
+<!--            padding: 10px;-->
+<!--            text-align: left;-->
+<!--            border-bottom: 1px solid #ddd;-->
+<!--        }-->
+<!--        th {-->
+<!--            background-color: #28a745;-->
+<!--            color: white;-->
+<!--        }-->
+<!--        tr:hover {-->
+<!--            background-color: #f1f1f1;-->
+<!--        }-->
+<!--        .book-btn {-->
+<!--            background: #007bff;-->
+<!--            color: white;-->
+<!--            border: none;-->
+<!--            padding: 8px 12px;-->
+<!--            cursor: pointer;-->
+<!--            border-radius: 5px;-->
+<!--            text-decoration: none;-->
+<!--        }-->
+<!--        .book-btn:hover {-->
+<!--            background: #0056b3;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <div class="container">-->
+<!--        <h2>Available Trains</h2>-->
+<!--        <p><strong>Source:</strong> {{ source }}</p>-->
+<!--        <p><strong>Destination:</strong> {{ destination }}</p>-->
+<!--        <p><strong>Travel Date:</strong> {{ travel_date }}</p>-->
+
+<!--        {% if trains %}-->
+<!--        <table>-->
+<!--            <thead>-->
+<!--                <tr>-->
+<!--                    <th>Train Number</th>-->
+<!--                    <th>Train Name</th>-->
+<!--                    <th>Seats Left</th>-->
+<!--                    <th>Action</th>  &lt;!&ndash; Added for Book Ticket button &ndash;&gt;-->
+<!--                </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--                {% for train in trains %}-->
+<!--                <tr>-->
+<!--                    <td>{{ train.train_number }}</td>-->
+<!--                    <td>-->
+<!--                        <a href="{% url 'train_route' train.id %}" class="train-link">-->
+<!--                               {{ train.train_name }}-->
+<!--                        </a>-->
+<!--                    </td>-->
+<!--                    <td>{{ train.total_Seats_left}}</td>-->
+<!--                    <td>-->
+<!--                        {% if train.total_Seats_left > 0 %}-->
+<!--                            <form action="{% url 'book_ticket' %}" method="POST">-->
+<!--                                {% csrf_token %}-->
+<!--                                <input type="hidden" name="train_id" value="{{ train.id }}">-->
+<!--                                <input type="hidden" name="travel_date" value="{{ travel_date }}">-->
+<!--                                <input type="hidden" name="from_station" value="{{ source }}">-->
+<!--                                <input type="hidden" name="to_station" value="{{ destination }}">-->
+<!--                                <button type="submit" class="book-btn">Book Ticket</button>-->
+<!--                             </form>-->
+<!--                        {% else %}-->
+<!--                          <button class="book-btn" disabled style="background-color: grey;">No Seats Left</button>-->
+<!--                        {% endif %}-->
+<!--                    </td>-->
+<!--                </tr>-->
+<!--                {% endfor %}-->
+<!--            </tbody>-->
+<!--        </table>-->
+<!--        {% else %}-->
+<!--        <p>No trains available on this day.</p>-->
+<!--        {% endif %}-->
+<!--    </div>-->
+<!--</body>-->
+<!--</html>-->
