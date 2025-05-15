@@ -8,7 +8,7 @@ A web-based **Railway Management System** built using **Django** and **MySQL**, 
 - 📅 **Train Schedule Management** - Manage running days and intermediate stations.
 - 🔐 **User Authentication** - Secure login, registration, and logout functionality.
 - 📧 **OTP-based Email Verification** - Users verify their email via OTP.
-- 📊 **Admin Panel** - Manage trains, stations, and bookings via Django Admin.
+- 📊 **Admin Panel** - Manage trains, stations, and bookings with Django Admin.
 
 ---
 
