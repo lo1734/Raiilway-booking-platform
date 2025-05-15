@@ -42,7 +42,7 @@
     <h2>🎟️ Ticket Details</h2>
     <div id="ticket-header"></div>
     <div id="ticket-container"></div>
-    <button onclick="window.print()">🖨️ Print Ticket</button>
+    <button onclick="printTicket()">🖨️ Print Ticket</button>
   </div>
 
   <script>
@@ -102,6 +102,29 @@
       ticketHTML += "</ul>";
       document.getElementById('ticket-container').innerHTML = ticketHTML;
       document.getElementById('ticket-section').style.display = 'block';
+
+      function printTicket() {
+        const originalContent = document.body.innerHTML;  // Backup the full page content
+        const ticketContent = document.getElementById('ticket-section').innerHTML;
+
+        // Replace body with ticket section only
+        document.body.innerHTML = `
+          <html>
+            <head>
+              <title>Print Ticket</title>
+            </head>
+            <body>
+              <h2>🎟️ Ticket Details</h2>
+              ${ticketContent}
+            </body>
+          </html>
+        `;
+
+        window.print(); // Trigger the print
+
+        document.body.innerHTML = originalContent; // Restore original content after printing
+        window.location.reload(); // Optional: reload the page to restore state if needed
+      }
     });
   </script>
 </body>
