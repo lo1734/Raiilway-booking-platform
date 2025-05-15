@@ -365,53 +365,79 @@ def generate_otp(request):
 
 @login_required(login_url='/login/')
 def passenger_details(request):
-    booking_data = request.session.get('booking_data')
-    if not booking_data:
-        messages.error(request, "No booking data found.")
-        return redirect('home')
-
     if request.method == 'POST':
-        names = request.POST.getlist('name[]')
-        ages = request.POST.getlist('age[]')
-        genders = request.POST.getlist('gender[]')
+        if 'train_id' in request.POST:  # Step 1: First POST request from 'Book Ticket' form
+            train_id = request.POST.get('train_id')
+            travel_date = request.POST.get('travel_date')
+            from_station = request.POST.get('from_station')
+            to_station = request.POST.get('to_station')
 
-        num_passengers = len(names)
+            # Save booking data to session
+            request.session['booking_data'] = {
+                'train_id': train_id,
+                'travel_date': travel_date,
+                'from_station': from_station,
+                'to_station': to_station
+            }
 
-        train = Train.objects.get(id=booking_data['train_id'])
+            train = Train.objects.get(id=train_id)
+            context = {
+                'train_name': train.train_name,
+                'train_number': train.train_number,
+                'source': from_station,
+                'destination': to_station,
+                'journey_date': travel_date,
+            }
+            print(context)
+            return render(request, 'railway/passenger_details.html', context)
 
-        # ✅ Check seat availability
-        total_booked = Booking.objects.filter(
-            train=train,
-            journey_date=booking_data['travel_date']
-        ) .aggregate(Sum('seats_booked'))['seats_booked__sum'] or 0
+        else:  # Step 2: Second POST request after filling passenger form
+            booking_data = request.session.get('booking_data')
+            if not booking_data:
+                messages.error(request, "No booking data found.")
+                return redirect('home')
 
+            names = request.POST.getlist('name[]')
+            ages = request.POST.getlist('age[]')
+            genders = request.POST.getlist('gender[]')
+            num_passengers = len(names)
 
-        # .aggregate(models.Sum('seats_booked'))['seats_booked__sum'] or 0
-        print("total_seats type:", type(total_booked))
-        print(total_booked)
-        # print("segment_data type:", type(segment_data))
-        # booked_seats=total_booked['seats__sum']
-        # available_seats = train.total_seats - booked_seats
-        available_seats=train.total_seats-total_booked
+            train = Train.objects.get(id=booking_data['train_id'])
 
-        if num_passengers > available_seats:
-            messages.error(request, f"Only {available_seats} seats available!")
-            return render(request, 'passenger_details.html')
+            # Check seat availability
+            total_booked = Booking.objects.filter(
+                train=train,
+                journey_date=booking_data['travel_date']
+            ).aggregate(Sum('seats_booked'))['seats_booked__sum'] or 0
 
-        # ✅ Save booking
-        Booking.objects.create(
-            user=request.user,
-            train=train,
-            from_station=booking_data['from_station'],
-            to_station=booking_data['to_station'],
-            journey_date=booking_data['travel_date'],
-            seats_booked=num_passengers
-        )
+            available_seats = train.total_seats - total_booked
 
-        messages.success(request, "Booking successful!")
-        # return redirect('home')
+            if num_passengers > available_seats:
+                messages.error(request, f"Only {available_seats} seats available!")
+                return render(request, 'railway/passenger_details.html', {
+                    'train_name': train.train_name,
+                    'train_number': train.train_number,
+                    'source': booking_data['from_station'],
+                    'destination': booking_data['to_station'],
+                    'journey_date': booking_data['travel_date'],
+                })
 
-    return render(request, 'railway/passenger_details.html')
+            # Save booking
+            Booking.objects.create(
+                user=request.user,
+                train=train,
+                from_station=booking_data['from_station'],
+                to_station=booking_data['to_station'],
+                journey_date=booking_data['travel_date'],
+                seats_booked=num_passengers
+            )
+
+            messages.success(request, "Booking successful!")
+            return redirect('home')
+
+    else:
+        # GET request fallback — just redirect
+        return redirect('home')
 
 @login_required(login_url='/login/')
 def enter_passenger_details(request):

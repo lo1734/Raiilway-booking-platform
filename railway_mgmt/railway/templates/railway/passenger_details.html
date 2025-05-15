@@ -12,11 +12,11 @@
 
   <form id="passenger-form">
     <div class="train-info">
-      <input type="text" id="trainName" placeholder="Train Name" required>
-      <input type="text" id="trainNumber" placeholder="Train Number" required>
-      <input type="text" id="source" placeholder="Source Station" required>
-      <input type="text" id="destination" placeholder="Destination Station" required>
-      <input type="date" id="journeyDate" required>
+      <input type="text" id="trainName" name="trainName" value="{{ train_name }}" placeholder="Train Name" required readonly>
+      <input type="text" id="trainNumber" name="trainNumber" value="{{ train_number }}" placeholder="Train Number" required readonly>
+      <input type="text" id="source" name="source" value="{{ source }}" placeholder="Source Station" required readonly>
+      <input type="text" id="destination" name="destination" value="{{ destination }}" placeholder="Destination Station" required readonly>
+      <input type="date" id="journeyDate" name="journeyDate" value="{{ journey_date }}" required readonly>
     </div>
 
     <h3 style="margin-top: 20px;">Passenger(s)</h3>
@@ -50,15 +50,6 @@
     function getQueryParam(param) {
       return new URLSearchParams(window.location.search).get(param) || '';
     }
-
-    // Populate fields from query params on page load
-    window.onload = function () {
-      document.getElementById("trainName").value = getQueryParam("trainName");
-      document.getElementById("trainNumber").value = getQueryParam("trainNumber");
-      document.getElementById("source").value = getQueryParam("source");
-      document.getElementById("destination").value = getQueryParam("destination");
-      document.getElementById("journeyDate").value = getQueryParam("date");
-    };
 
     // Add passenger dynamically
     function addPassenger() {
@@ -117,106 +108,3 @@
 </html>
 
 
-<!--<!DOCTYPE html>-->
-<!--<html lang="en">-->
-<!--<head>-->
-<!--  {% load static %}-->
-<!--  <meta charset="UTF-8">-->
-<!--  <title>Enter Passenger Details</title>-->
-<!--  <link rel="stylesheet" href="{% static 'passenger_styles.css' %}">-->
-<!--</head>-->
-<!--<body>-->
-
-<!--  <h2>Enter Passenger Details</h2>-->
-
-<!--  <form id="passenger-form">-->
-<!--    <div class="train-info">-->
-<!--      <input type="text" id="trainName" placeholder="Train Name" required>-->
-<!--      <input type="text" id="trainNumber" placeholder="Train Number" required>-->
-<!--      <input type="text" id="source" placeholder="Source Station" required>-->
-<!--      <input type="text" id="destination" placeholder="Destination Station" required>-->
-<!--      <input type="date" id="journeyDate" required>-->
-<!--    </div>-->
-
-<!--    <h3 style="margin-top: 20px;">Passenger(s)</h3>-->
-<!--    <div id="passenger-forms">-->
-<!--      <div class="passenger">-->
-<!--        <input type="text" name="name[]" placeholder="Name" required>-->
-<!--        <input type="number" name="age[]" placeholder="Age" required>-->
-<!--        <select name="gender[]">-->
-<!--          <option value="Male">Male</option>-->
-<!--          <option value="Female">Female</option>-->
-<!--        </select>-->
-<!--      </div>-->
-<!--    </div>-->
-
-<!--    <div class="form-buttons">-->
-<!--      <button type="button" id="add-btn" onclick="addPassenger()">➕ Add Passenger</button>-->
-<!--      <button type="submit">Confirm Booking</button>-->
-<!--    </div>-->
-<!--  </form>-->
-
-<!--  &lt;!&ndash; Ticket Section &ndash;&gt;-->
-<!--  <div id="ticket-section" style="display: none;">-->
-<!--    <h2>🎟️ Ticket Details</h2>-->
-<!--    <div id="ticket-header"></div>-->
-<!--    <div id="ticket-container"></div>-->
-<!--    <button onclick="window.print()">🖨️ Print Ticket</button>-->
-<!--  </div>-->
-
-<!--  <script>-->
-<!--    function addPassenger() {-->
-<!--      const container = document.getElementById('passenger-forms');-->
-<!--      const div = document.createElement('div');-->
-<!--      div.classList.add('passenger');-->
-<!--      div.innerHTML = `-->
-<!--        <input type="text" name="name[]" placeholder="Name" required>-->
-<!--        <input type="number" name="age[]" placeholder="Age" required>-->
-<!--        <select name="gender[]">-->
-<!--          <option value="Male">Male</option>-->
-<!--          <option value="Female">Female</option>-->
-<!--        </select>-->
-<!--      `;-->
-<!--      container.appendChild(div);-->
-<!--    }-->
-
-<!--    document.getElementById('passenger-form').addEventListener('submit', function(e) {-->
-<!--      e.preventDefault();-->
-
-<!--      // Collect train info-->
-<!--      const trainName = document.getElementById('trainName').value;-->
-<!--      const trainNumber = document.getElementById('trainNumber').value;-->
-<!--      const source = document.getElementById('source').value;-->
-<!--      const destination = document.getElementById('destination').value;-->
-<!--      const journeyDate = document.getElementById('journeyDate').value;-->
-
-<!--      // Passenger details-->
-<!--      const names = document.getElementsByName('name[]');-->
-<!--      const ages = document.getElementsByName('age[]');-->
-<!--      const genders = document.getElementsByName('gender[]');-->
-
-<!--      // Ticket header-->
-<!--      const headerHTML = `-->
-<!--        <p><strong>Train:</strong> ${trainName} (${trainNumber})</p>-->
-<!--        <p><strong>From:</strong> ${source} ➡️ <strong>To:</strong> ${destination}</p>-->
-<!--        <p><strong>Date of Journey:</strong> ${journeyDate}</p>-->
-<!--        <hr>-->
-<!--      `;-->
-<!--      document.getElementById('ticket-header').innerHTML = headerHTML;-->
-
-<!--      // Passenger list-->
-<!--      let ticketHTML = "<ul>";-->
-<!--      for (let i = 0; i < names.length; i++) {-->
-<!--        ticketHTML += `<li><strong>Name:</strong> ${names[i].value},-->
-<!--                        <strong>Age:</strong> ${ages[i].value},-->
-<!--                        <strong>Gender:</strong> ${genders[i].value}</li>`;-->
-<!--      }-->
-<!--      ticketHTML += "</ul>";-->
-
-<!--      document.getElementById('ticket-container').innerHTML = ticketHTML;-->
-<!--      document.getElementById('ticket-section').style.display = 'block';-->
-<!--    });-->
-<!--  </script>-->
-
-<!--</body>-->
-<!--</html>-->
